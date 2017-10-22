@@ -92,16 +92,16 @@ WEST     = 3
 NUM_DIRS = 4
 
 # Define the different kinds of tile.
-TileKind = namedtuple('TileKind', 'is_solid img')
+TileKind = namedtuple('TileKind', 'is_beneath is_solid img')
 tile_kinds = {
-    0: TileKind(is_solid=False, img='data/plain_floor.png'),
-    1: TileKind(is_solid=True, img="data/wall_plain.png"),
-    2: TileKind(is_solid=True, img="data/door_plain.png"),
-    3: TileKind(is_solid=True, img="data/column_plain.png"),
-    4: TileKind(is_solid=False, img="data/grass_plain.png"),
-    5: TileKind(is_solid=False, img="data/floor_bloody.png"),
-    6: TileKind(is_solid=True, img="data/spikes.png"),
-    7: TileKind(is_solid=False, img="data/floor_glass.png")
+    0: TileKind(is_beneath=True, is_solid=False, img='data/plain_floor.png'),
+    1: TileKind(is_beneath=False, is_solid=True, img="data/wall_plain.png"),
+    2: TileKind(is_beneath=False, is_solid=True, img="data/door_plain.png"),
+    3: TileKind(is_beneath=False, is_solid=True, img="data/column_plain.png"),
+    4: TileKind(is_beneath=False, is_solid=False, img="data/grass_plain.png"),
+    5: TileKind(is_beneath=True, is_solid=False, img="data/floor_bloody.png"),
+    6: TileKind(is_beneath=False, is_solid=True, img="data/spikes.png"),
+    7: TileKind(is_beneath=True, is_solid=False, img="data/floor_glass.png")
 }
 
 class Game(object):
@@ -277,7 +277,7 @@ def dialog_action_its_locked():
 def dialog_action_guard_blocks_you():
     yield BigMessage('A guard does not let you through.')
 
-def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
+def draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, beneathness):
     farness_vec = 0
     strafe_vec = 0
 
@@ -321,6 +321,9 @@ def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
                     continue
 
                 tile = world.at(pos_x, pos_y)
+                if tile_kinds[tile].is_beneath != beneathness:
+                    continue
+
                 tile_img = tile_kinds[tile].img
 
                 if tile_img == None:
@@ -347,6 +350,9 @@ def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
                 if strafe == 0:
                     break
 
+def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
+    draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, True)
+    draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, False)
 
 if __name__ == '__main__':
     # Initialize Pygame.
