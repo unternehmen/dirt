@@ -295,6 +295,10 @@ class Choose(object):
     def __init__(self, *choices):
         self.choices = choices
 
+class BigMessage(object):
+    def __init__(self, text):
+        self.text = text
+
 class DialogManager(object):
     font = None
     bubble_image = None
@@ -336,6 +340,9 @@ class DialogManager(object):
             self.mode      = 'choosing'
             self.choices   = command.choices
             self.selection = 0
+        elif isinstance(command, BigMessage):
+            self.mode      = 'bigmessage'
+            self.text = command.text
         else:
             assert False, 'no such dialog command: %s' % str(command)
 
@@ -357,6 +364,9 @@ class DialogManager(object):
                 self.choices = []
                 self.selection = 0
                 self._advance(selection)
+        elif self.mode == 'bigmessage':
+            if key == K_RETURN:
+                self._advance()
 
     def update(self):
         if self.mode == 'saying':
@@ -390,6 +400,10 @@ class DialogManager(object):
                     window.fill((0, 0, 0), (3, cursor + 5, 4, 4))
 
                 cursor += 18
+        elif self.mode == 'bigmessage':
+            window.fill((255, 255, 255))
+            draw_text(font, self.text, (0, 0, 0), window, 20, 20)
+            draw_text(font, '[Enter]', (0, 0, 0), window, 250, 210)
 
     def is_active(self):
         return self.mode != 'inactive'
@@ -432,6 +446,36 @@ def dialog_action_ghost():
             yield Say('... woo...')
         elif result == 2:
             break
+
+def dialog_action_tavern():
+    if player.money > 1:
+        player.health = player.max_health
+        player.money -= 2
+        yield BigMessage('You went in and had a drink.')
+    else:
+        yield BigMessage('You can\'t afford an ale.')
+
+def dialog_action_read_lettre():
+    yield BigMessage("""Dear Jyesula,
+
+May the Stars be on our Side.  If this
+Lettre has fallen into the wrong Hands,
+we may all be doomed.
+
+Jyesula, your People are dying.
+Only you can stop the Sick Drake
+from putrifying our Realm.
+
+We beg you set out at once.
+The Town of Anstre awaits its fate.
+
+-Mayor of Anstre""")
+
+def dialog_action_its_locked():
+    yield BigMessage('It\'s locked.')
+
+def dialog_action_guard_blocks_you():
+    yield BigMessage('A guard does not let you through.')
 
 def draw_world(window, x, y, facing, world_width, world_height, tile_kinds, tile_images):
     farness_vec = 0
@@ -598,24 +642,8 @@ if __name__ == '__main__':
 
     # new DialogManager system
     dialog_manager = DialogManager()
-
-    # Basic dialog splash screens
-    in_dialogue = True
-    dialogue_text = """Dear Jyesula,
-
-May the Stars be on our Side.  If this
-Lettre has fallen into the wrong Hands,
-we may all be doomed.
-
-Jyesula, your People are dying.
-Only you can stop the Sick Drake
-from putrifying our Realm.
-
-We beg you set out at once.
-The Town of Anstre awaits its fate.
-
--Mayor of Anstre"""
-
+    dialog_manager.start(dialog_action_read_lettre)
+    
     timers = []
     chompers_active = []
 
@@ -640,10 +668,6 @@ The Town of Anstre awaits its fate.
                        player.x, player.y, player.facing,
                        world_width, world_height,
                        tile_kinds, tile_images)
-
-            # Draw the dialog if it is active.
-            if dialog_manager.is_active():
-                dialog_manager.draw(window, font)
 
             # Draw the enemy if we are in battle.
             if player.is_in_battle():
@@ -688,19 +712,6 @@ The Town of Anstre awaits its fate.
                               True, (0, 0, 0))
             window.blit(msg, (170, 44))
 
-            # Do not be fooled --
-            # The following code is for drawing Jyesula's lettre at the beginning of the game.
-            if in_dialogue:
-                cursor = 0
-
-                window.fill((255, 255, 255), (0, 0, 320, 240))
-
-                draw_text(font, dialogue_text, (0, 0, 0), window, 20, 20 + cursor)
-
-                window.blit(
-                  font.render('[Enter]', True, (0, 0, 0)),
-                  (250, 210))
-
             # Draw the menu if the menu is active.
             if player.is_in_menu():
                 cursor = 165
@@ -717,6 +728,11 @@ The Town of Anstre awaits its fate.
                     cursor += 18
                     i += 1
 
+
+            # Draw the dialog if it is active.
+            if dialog_manager.is_active():
+                dialog_manager.draw(window, font)
+            
             # Update the window.
             pygame.display.flip()
 
@@ -732,11 +748,6 @@ The Town of Anstre awaits its fate.
                     elif event.key == K_BACKQUOTE:
                         if dev_enabled:
                             current_mode = MODE_DEV_CONSOLE
-                    elif in_dialogue:
-                        # Handle dialogue controls.
-                        if event.key == K_RETURN:
-                            # Close the dialogue.
-                            in_dialogue = False
                     elif player.is_in_menu() and player.is_in_battle():
                         # Handle battle menu navigation and choosing.
                         enemy = player.get_opponent()
@@ -805,13 +816,7 @@ The Town of Anstre awaits its fate.
                                     target = (player.x + offset[0],
                                               player.y + offset[1])
                                     if target == (14, 18):
-                                        if player.money > 1:
-                                            player.health = player.max_health
-                                            player.money -= 2
-                                            dialogue_text = "You went in and had a drink."
-                                        else:
-                                            dialogue_text = "You can't afford an ale."
-                                        in_dialogue = True
+                                        dialog_manager.start(dialog_action_tavern)
                                     elif target == (12, 29):
                                         # Enter the throne room of Jyesula.
                                         if game.time < 60 * 6 or game.time >= 60 * 19:
@@ -824,11 +829,9 @@ The Town of Anstre awaits its fate.
                                         # Enter the ghost room.
                                         dialog_manager.start(dialog_action_ghost, ghost_img)
                                     elif target == (12, 15):
-                                        dialogue_text = "The guard does not let you through."
-                                        in_dialogue = True
+                                        dialog_manager.start(dialog_action_guard_blocks_you)
                                     elif tile_at(*target) == 2:
-                                        dialogue_text = "It's locked."
-                                        in_dialogue = True
+                                        dialog_manager.start(dialog_action_its_locked)
                             elif event.key == K_DOWN:
                                 # Attempt to move the player backward.
                                 offset = dir_as_offset(player.facing)
