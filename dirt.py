@@ -169,32 +169,6 @@ world = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 
 font = None
 
-
-def say_multiple(mouth, seq):
-    """
-    Make a mouth say multiple things in sequence.
-    
-    This actively modifies the mouth's stop_hooks, so do not assume
-    any specific hook will be at the top of the stop_hooks stack.
-    """
-    def say_next_gen(i):
-        def say_next():
-            mouth.stop_hooks.remove(say_next)
-
-            if i < len(seq) - 1:
-                mouth.stop_hooks.append(say_next_gen(i + 1))
-
-            if i < len(seq):
-                mouth.say(seq[i])
-        return say_next
-
-    if seq == []:
-        return
-    else:
-        mouth.stop_hooks.append(say_next_gen(1))
-        mouth.say(seq[0])
-
-
 class Player:
     def __init__(self, x, y):
         self.health = 3
