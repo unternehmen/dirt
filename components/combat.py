@@ -14,7 +14,7 @@ class CombatComponent:
 
         if CombatComponent.blow_fx is None:
             CombatComponent.blow_fx = \
-              pygame.mixer.Sound('data/blow.ogg')
+              pygame.mixer.Sound('data/blow.wav')
 
     def add_ignore_hook(self, proc):
         self.ignore_hooks += [proc] + self.ignore_hooks
