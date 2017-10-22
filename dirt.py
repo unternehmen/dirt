@@ -83,6 +83,13 @@ MODE_DEV_CONSOLE    = 1
 MODE_DEV_MAP_EDITOR = 2
 current_mode = MODE_GAME
 
+# Cardinal directions
+NORTH    = 0
+EAST     = 1
+SOUTH    = 2
+WEST     = 3
+NUM_DIRS = 4
+
 # Define the different kinds of tile.
 TileKind = namedtuple('TileKind', 'is_solid img')
 tile_kinds = {
@@ -95,7 +102,6 @@ tile_kinds = {
     6: TileKind(is_solid=True, img="data/spikes.png"),
     7: TileKind(is_solid=False, img="data/floor_glass.png")
 }
-
 
 class Game(object):
     """A Game stores information which needs to be everywhere."""
@@ -160,12 +166,6 @@ world = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
          1, 4, 4, 4, 4, 4, 4, 4, 1, 7, 7, 3, 7, 3, 1, 1, 7, 1,
          1, 4, 4, 4, 4, 4, 4, 4, 1, 7, 1, 1, 7, 1, 2, 7, 7, 1,
          1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1]
-
-NORTH    = 0
-EAST     = 1
-SOUTH    = 2
-WEST     = 3
-NUM_DIRS = 4
 
 font = None
 
@@ -459,39 +459,6 @@ def dialog_action_ghost():
         elif result == 2:
             break
 
-
-class SkyRenderSystem(object):
-    night_images = None
-    day_images = None
-
-    def __init__(self):
-        # Load sky images if they are not already.
-        if SkyRenderSystem.night_images is None:
-            SkyRenderSystem.night_images = [
-                pygame.image.load('data/sky_north.png'),
-                pygame.image.load('data/sky_east.png'),
-                pygame.image.load('data/sky_south.png'),
-                pygame.image.load('data/sky_west.png')
-            ]
-
-        if SkyRenderSystem.day_images is None:
-            SkyRenderSystem.day_images = [
-                pygame.image.load('data/day_north.png'),
-                pygame.image.load('data/day_east.png'),
-                pygame.image.load('data/day_south.png'),
-                pygame.image.load('data/day_west.png')
-            ]
-
-    def draw(self, window, time, facing):
-        if time < 60 * 6 or time >= 60 * 19:
-            window.blit(SkyRenderSystem.night_images[facing],
-                        (0, 0),
-                        (0, 0, 160, 89))
-        else:
-            window.blit(SkyRenderSystem.day_images[facing],
-                        (0, 0),
-                        (0, 0, 160, 89))
-
 class WorldRenderSystem(object):
     def __init__(self):
         pass
@@ -607,6 +574,23 @@ if __name__ == '__main__':
     ghost_img = pygame.image.load('data/ghost.png')
     spike_sound = pygame.mixer.Sound('data/blow.wav')
 
+    # Load sky images
+    night_sky = [
+        pygame.image.load('data/sky_north.png'),
+        pygame.image.load('data/sky_east.png'),
+        pygame.image.load('data/sky_south.png'),
+        pygame.image.load('data/sky_west.png')
+    ]
+
+    day_sky = [
+        pygame.image.load('data/day_north.png'),
+        pygame.image.load('data/day_east.png'),
+        pygame.image.load('data/day_south.png'),
+        pygame.image.load('data/day_west.png')
+    ]
+
+    skybox = list(night_sky) # We'll use the night sky first
+
     # Load images for all tiles.
     TileImage = namedtuple('TileImage', 'regular flipped')
     tile_images = {}
@@ -645,9 +629,6 @@ if __name__ == '__main__':
     # new DialogManager system
     dialog_manager = DialogManager()
 
-    # make the SkyRenderSystem
-    sky_render_system = SkyRenderSystem()
-
     # make the WorldRenderSystem
     world_render_system = WorldRenderSystem()
 
@@ -684,7 +665,8 @@ The Town of Anstre awaits its fate.
             window.fill((255, 255, 255))
 
             # Draw the sky.
-            sky_render_system.draw(window, game.time, player.facing)
+            if skybox[player.facing] != None:
+                window.blit(skybox[player.facing], (0, 0), (0, 0, 160, 89))
 
             # Draw the world.
             world_render_system.draw(window,
@@ -928,6 +910,12 @@ The Town of Anstre awaits its fate.
                 player.stop_time()
 
                 game.time = (game.time + 1) % day_length
+
+                # Update the sky
+                if game.time < 60 * 6 or game.time >= 60 * 19:
+                    skybox = list(night_sky)
+                else:
+                    skybox = list(day_sky)
 
                 # If the player is in battle, let the enemy attack
                 # and summon the menu.
