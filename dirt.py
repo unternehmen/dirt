@@ -9,7 +9,6 @@ from monsters.rat import Rat
 from monsters.jyesula import Jyesula
 from monsters.proselytizer import Proselytizer
 from monsters.guard import Guard
-from timer import Timer
 from utils import draw_text
 
 # Developer privileges / Allow backtick (`) console.
@@ -499,9 +498,6 @@ if __name__ == '__main__':
     # new DialogManager system
     dialog_manager = DialogManager()
     dialog_manager.start(dialog_action_read_lettre)
-    
-    timers = []
-    chompers_active = []
 
     clock = pygame.time.Clock()
 
@@ -720,17 +716,6 @@ if __name__ == '__main__':
             # If the player is in battle, tick the enemy.
             if player.is_in_battle():
                 player.get_opponent().tick()
-
-            # Handle timers
-            i = 0
-            while i < len(timers):
-                timers[i].advance()
-
-                if timers[i].is_done():
-                    timers[i].callback(timers[i].data)
-                    timers.pop(i)
-                else:
-                    i += 1
 
             # End the game if the user has died.
             if player.is_dead():
