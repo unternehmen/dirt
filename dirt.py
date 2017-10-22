@@ -789,29 +789,6 @@ if __name__ == '__main__':
 
                                     if player.is_in_battle():
                                         player.get_opponent().follow(player)
-
-                                    # Check if we're on a chomper tile
-                                    if tile_at(player.x, player.y) == 5:
-                                        # Yes, so let's add a timer
-                                        pos = (player.x, player.y)
-                                        if pos not in chompers_active:
-                                            chompers_active.append(pos)
-                                            def chomp_cb(data):
-                                                x, y = data
-                                                if player.x == x and player.y == y:
-                                                    player.health = 0
-                                                else:
-                                                    world[y * world_width + x] = 6
-                                                    spike_sound.play()
-
-                                                    def unchomp_cb(data):
-                                                        x, y = data
-                                                        world[y * world_width + x] = 5
-                                                        spike_sound.play()
-                                                        chompers_active.remove((x, y))
-
-                                                    timers.append(Timer(10, unchomp_cb, (x, y)))
-                                            timers.append(Timer(40, chomp_cb, pos))
                                 else:
                                     target = (player.x + offset[0],
                                               player.y + offset[1])
@@ -843,29 +820,6 @@ if __name__ == '__main__':
 
                                     if player.is_in_battle():
                                         player.get_opponent().follow(player)
-
-                                    # Check if we're on a chomper tile
-                                    if tile_at(player.x, player.y) == 5:
-                                        # Yes, so let's add a timer
-                                        pos = (player.x, player.y)
-                                        if pos not in chompers_active:
-                                            chompers_active.append(pos)
-                                            def chomp_cb(data):
-                                                x, y = data
-                                                if player.x == x and player.y == y:
-                                                    player.health = 0
-                                                else:
-                                                    world[y * world_width + x] = 6
-                                                    spike_sound.play()
-
-                                                    def unchomp_cb(data):
-                                                        x, y = data
-                                                        world[y * world_width + x] = 5
-                                                        spike_sound.play()
-                                                        chompers_active.remove((x, y))
-
-                                                    timers.append(Timer(10, unchomp_cb, (x, y)))
-                                            timers.append(Timer(40, chomp_cb, pos))
 
             # If we are in the throne room, tick the dialogue.
             game.mouth.tick()
