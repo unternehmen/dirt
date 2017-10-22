@@ -107,31 +107,8 @@ class Game(object):
     """A Game stores information which needs to be everywhere."""
     def __init__(self):
         """Create a new Game object."""
-        # Whether the player is allowed to pick a menu item
-        self.allowed = True
-        # Mouth used for throne room dialogue.
-        self.mouth = DialogueComponent(color=(255, 0, 0))
-        # Make choosing options impossible during throne speech.
-        self.mouth.start_hooks.append(self._forbid_picking)
-        self.mouth.stop_hooks.append(self._allow_picking)
-        # The currently active dialogue state machine.
-        self.current_dialogue_map = None
-        # The currently active dialogue state.
-        self.current_dialogue_state = 0
-        # The currently active dialogue choice handler.
-        self.current_dialogue_choice_handler = None
         # The current minute of the in-game day.
         self.time = 60 * 5
-
-
-    def _allow_picking(self):
-        """Allow the user to select a choice."""
-        self.allowed = True
-
-
-    def _forbid_picking(self):
-        """Forbid the user from selecting a choice."""
-        self.allowed = False
 
 # Define the game world.
 world_width = 18
@@ -820,9 +797,6 @@ if __name__ == '__main__':
 
                                     if player.is_in_battle():
                                         player.get_opponent().follow(player)
-
-            # If we are in the throne room, tick the dialogue.
-            game.mouth.tick()
 
             # If the enemy died, end the battle.
             if player.is_in_battle() and player.get_opponent().is_dead():
