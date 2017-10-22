@@ -1,3 +1,5 @@
+import math
+
 def draw_text(font, text, color, window, x, y):
     "Draw TEXT in FONT with COLOR onto WINDOW at (X, Y)."
     cursor = 0
