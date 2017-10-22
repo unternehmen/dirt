@@ -71,6 +71,8 @@ key_chars = {
     pygame.K_8: '8',
     pygame.K_9: '9',
     pygame.K_SPACE: ' ',
+    pygame.K_SLASH: '/',
+    pygame.K_PERIOD: '.'
 }
 
 # Map editor
@@ -683,23 +685,45 @@ if __name__ == '__main__':
                     elif e.key == pygame.K_RETURN:
                         # Submit a command
                         cmd = dev_console_input.strip().lower()
-                        
-                        if cmd == 'help':
-                            dev_console_print('The following commands are available:')
-                            dev_console_print('  HELP')
-                            dev_console_print('  EDITMAP')
-                            dev_console_print('  SAVEMAP')
-                            dev_console_print('Press backtick(`) to return to the game.')
-                        elif cmd == 'editmap':
-                            current_mode = MODE_DEV_MAP_EDITOR
-                            dev_map_editor_pan_x = 0
-                            dev_map_editor_pan_y = 0
-                            dev_console_print('Started map editor.')
-                        elif cmd == 'savemap':
-                            world.save('data/castle.json')
-                            dev_console_print('Saved to data/castle.json')
-                        else:
-                            dev_console_print('Bzzzrt! Type HELP for instructions.')
+                        args = cmd.split()
+
+                        if len(args) >= 1:
+                            if args[0] == 'help':
+                                dev_console_print('The following commands are available:')
+                                dev_console_print('  HELP')
+                                dev_console_print('  LOADMAP <filename>')
+                                dev_console_print('  EDITMAP')
+                                dev_console_print('  SAVEMAP <filename>')
+                                dev_console_print('  TELEPORT <x> <y>')
+                                dev_console_print('Press backtick(`) to return to the game.')
+                            elif args[0] == 'editmap':
+                                current_mode = MODE_DEV_MAP_EDITOR
+                                dev_map_editor_pan_x = 0
+                                dev_map_editor_pan_y = 0
+                                dev_console_print('Started map editor.')
+                            elif args[0] == 'savemap':
+                                if len(args) == 2:
+                                    world.save(args[1])
+                                    dev_console_print('Saved to %s' % args[1])
+                                else:
+                                    dev_console_print('usage: savemap <filename>')
+                            elif args[0] == 'loadmap':
+                                if len(args) == 2:
+                                    world.load(args[1])
+                                    dev_console_print('Loaded map %s' % args[1])
+                                else:
+                                    dev_console_print('usage: loadmap <filename>')
+                            elif args[0] == 'teleport':
+                                if len(args) == 3:
+                                    x = int(args[1])
+                                    y = int(args[2])
+                                    player.x = x
+                                    player.y = y
+                                    dev_console_print('Teleported to (%d, %d)' % (x, y))
+                                else:
+                                    dev_console_print('usage: teleport <x> <y>')
+                            else:
+                                dev_console_print('Bzzzrt! Type HELP for instructions.')
 
                         dev_console_input = ''
                     elif e.key in key_chars:
