@@ -16,6 +16,11 @@ class World(object):
             raise ValueError('Tried to access tile (%d, %d) in %dx%d map' % (x, y, self.width, self.height))
         self.tiles[y*self.width + x] = num
 
+    def newmap(self, width, height):
+        self.width = width
+        self.height = height
+        self.tiles = [0] * width * height
+
     def load(self, filename):
         f = open(filename, 'r')
         j = json.load(f)

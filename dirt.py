@@ -691,6 +691,7 @@ if __name__ == '__main__':
                             if args[0] == 'help':
                                 dev_console_print('The following commands are available:')
                                 dev_console_print('  HELP')
+                                dev_console_print('  NEWMAP <width> <height>')
                                 dev_console_print('  LOADMAP <filename>')
                                 dev_console_print('  EDITMAP')
                                 dev_console_print('  SAVEMAP <filename>')
@@ -701,6 +702,14 @@ if __name__ == '__main__':
                                 dev_map_editor_pan_x = 0
                                 dev_map_editor_pan_y = 0
                                 dev_console_print('Started map editor.')
+                            elif args[0] == 'newmap':
+                                if len(args) == 3:
+                                    width = int(args[1])
+                                    height = int(args[2])
+                                    world.newmap(width, height)
+                                    dev_console_print('New map created (size %dx%d)' % (width, height))
+                                else:
+                                    dev_console_print('usage: newmap <width> <height>')
                             elif args[0] == 'savemap':
                                 if len(args) == 2:
                                     world.save(args[1])
