@@ -376,6 +376,7 @@ if __name__ == '__main__':
     money_ten = pygame.image.load('data/money_ten.png')
     money_sixteen = pygame.image.load('data/money_sixteen.png')
     money_thirtytwo = pygame.image.load('data/money_thirtytwo.png')
+    ui_frame_img = pygame.image.load('data/ui_frame.png')
     wall_plain_img = pygame.image.load('data/wall_plain.png')
     wall_plain_flipped_img = pygame.transform.flip(wall_plain_img,
                                                    True,
@@ -474,8 +475,7 @@ if __name__ == '__main__':
                 player.get_opponent().draw(window)
 
             # Draw the border around the world.
-            window.fill((0, 0, 0), (160, 0, 1, 160))
-            window.fill((0, 0, 0), (0, 160, 160, 1))
+            window.blit(ui_frame_img, (0, 0))
 
             # Draw the player's avatar.
             window.blit(jauld_img, (170, 10))
