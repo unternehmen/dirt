@@ -5,6 +5,7 @@ import sys, pygame, math, random
 from collections import namedtuple
 from pygame.locals import *
 from dialogmanager import DialogManager, Say, Choose, BigMessage
+from world import World
 from monsters.rat import Rat
 from monsters.jyesula import Jyesula
 from monsters.proselytizer import Proselytizer
@@ -109,40 +110,6 @@ class Game(object):
         # The current minute of the in-game day.
         self.time = 60 * 5
 
-# Define the game world.
-world_width = 18
-world_height = 30
-world = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
-         1, 4, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1,
-         1, 4, 0, 7, 7, 7, 0, 4, 4, 4, 4, 4, 3, 4, 4, 4, 1, 1,
-         1, 4, 0, 7, 3, 7, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4, 1, 1,
-         1, 4, 0, 7, 7, 7, 0, 4, 4, 4, 4, 3, 0, 4, 4, 1, 1, 1,
-         1, 4, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 4, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 1, 4, 1, 4, 4, 4, 4, 4, 4, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 3, 4, 4, 4, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
-         1, 4, 3, 4, 4, 4, 4, 4, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
-         1, 4, 4, 4, 4, 3, 4, 4, 1, 4, 2, 1, 0, 1, 0, 0, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 4, 1, 1, 0, 1, 0, 1, 0, 1,
-         1, 4, 4, 3, 4, 4, 4, 4, 1, 4, 4, 0, 0, 1, 2, 1, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 1, 1, 1, 0, 3, 7, 3, 0, 5, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 0, 0, 7, 7, 7, 0, 5, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 0, 1, 3, 7, 3, 1, 5, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 1, 7, 1, 7, 1, 7, 1, 0, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 7, 7, 3, 7, 3, 1, 1, 7, 1,
-         1, 4, 4, 4, 4, 4, 4, 4, 1, 7, 1, 1, 7, 1, 2, 7, 7, 1,
-         1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1]
-
 font = None
 
 class Player:
@@ -241,10 +208,6 @@ def dir_as_offset(direction):
     elif direction == WEST:
         return -1, 0
 
-
-def tile_at(x, y):
-    return world[y * world_width + x]
-
 def dialog_action_throne_room():
     while True:
         result = yield Choose('Bow', 'Beg', 'Talk about...', 'Depart')
@@ -313,7 +276,7 @@ def dialog_action_its_locked():
 def dialog_action_guard_blocks_you():
     yield BigMessage('A guard does not let you through.')
 
-def draw_world(window, x, y, facing, world_width, world_height, tile_kinds, tile_images):
+def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
     farness_vec = 0
     strafe_vec = 0
 
@@ -352,11 +315,11 @@ def draw_world(window, x, y, facing, world_width, world_height, tile_kinds, tile
                         (strafe_vec[1] * strafe)
 
                 # If the tile is off-world, refuse to draw it.
-                if pos_x < 0 or pos_x >= world_width or \
-                   pos_y < 0 or pos_y >= world_height:
+                if pos_x < 0 or pos_x >= world.width or \
+                   pos_y < 0 or pos_y >= world.height:
                     continue
 
-                tile = tile_at(pos_x, pos_y)
+                tile = world.at(pos_x, pos_y)
                 tile_img = tile_kinds[tile].img
 
                 if tile_img == None:
@@ -471,6 +434,8 @@ if __name__ == '__main__':
     }
     day_length = 60 * 24
     game = Game()
+    world = World()
+    world.load('data/castle.json')
 
     # Set up and play the music.
     pygame.mixer.music.load('data/magic-town.ogg')
@@ -499,7 +464,7 @@ if __name__ == '__main__':
             # Draw the world.
             draw_world(window,
                        player.x, player.y, player.facing,
-                       world_width, world_height,
+                       world,
                        tile_kinds, tile_images)
 
             # Draw the enemy if we are in battle.
@@ -614,7 +579,7 @@ if __name__ == '__main__':
                             elif event.key == K_UP:
                                 # Attempt to move the player forward.
                                 offset = dir_as_offset(player.facing)
-                                if not tile_kinds[tile_at(player.x + offset[0],
+                                if not tile_kinds[world.at(player.x + offset[0],
                                                   player.y + offset[1])].is_solid:
                                     player.x += offset[0]
                                     player.y += offset[1]
@@ -640,13 +605,13 @@ if __name__ == '__main__':
                                         dialog_manager.start(dialog_action_ghost, ghost_img)
                                     elif target == (12, 15):
                                         dialog_manager.start(dialog_action_guard_blocks_you)
-                                    elif tile_at(*target) == 2:
+                                    elif world.at(*target) == 2:
                                         dialog_manager.start(dialog_action_its_locked)
                             elif event.key == K_DOWN:
                                 # Attempt to move the player backward.
                                 offset = dir_as_offset(player.facing)
-                                if not tile_kinds[tile_at(player.x - offset[0],
-                                                  player.y - offset[1])].is_solid:
+                                if not tile_kinds[world.at(player.x - offset[0],
+                                                           player.y - offset[1])].is_solid:
                                     player.x -= offset[0]
                                     player.y -= offset[1]
                                     player.pass_time()
@@ -679,7 +644,7 @@ if __name__ == '__main__':
 
                 # Start a random encounter, randomly.
                 if (not player.is_in_battle()
-                        and tile_at(player.x, player.y) != 5
+                        and world.at(player.x, player.y) != 5
                         and random.randint(0, 30) == 0):
                     index = random.randint(0,3)
 
@@ -773,7 +738,7 @@ if __name__ == '__main__':
                         if ch in '01234567':
                             tile_x = player.x - dev_map_editor_pan_x
                             tile_y = player.y - dev_map_editor_pan_y
-                            world[tile_y*world_width + tile_x] = int(ch)
+                            world.set_at(tile_x, tile_y, int(ch))
             
             window.fill((0, 0, 0))
             
@@ -781,8 +746,8 @@ if __name__ == '__main__':
                 tile_y = y + player.y - dev_map_editor_pan_y
                 for x in range(-6, 6):
                     tile_x = x + player.x - dev_map_editor_pan_x
-                    if tile_x >= 0 and tile_x < world_width and tile_y >= 0 and tile_y < world_height:
-                        tile = tile_at(tile_x, tile_y)
+                    if tile_x >= 0 and tile_x < world.width and tile_y >= 0 and tile_y < world.height:
+                        tile = world.at(tile_x, tile_y)
 
                         color = (255, 255, 255)
                         if tile_x == player.x and tile_y == player.y:
