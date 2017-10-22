@@ -665,7 +665,7 @@ The Town of Anstre awaits its fate.
             window.fill((255, 255, 255))
 
             # Draw the sky.
-            if skybox[player.facing] != None:
+            if skybox[player.facing] is not None:
                 window.blit(skybox[player.facing], (0, 0), (0, 0, 160, 89))
 
             # Draw the world.
