@@ -688,12 +688,16 @@ if __name__ == '__main__':
                             dev_console_print('The following commands are available:')
                             dev_console_print('  HELP')
                             dev_console_print('  EDITMAP')
+                            dev_console_print('  SAVEMAP')
                             dev_console_print('Press backtick(`) to return to the game.')
                         elif cmd == 'editmap':
                             current_mode = MODE_DEV_MAP_EDITOR
                             dev_map_editor_pan_x = 0
                             dev_map_editor_pan_y = 0
                             dev_console_print('Started map editor.')
+                        elif cmd == 'savemap':
+                            world.save('data/castle.json')
+                            dev_console_print('Saved to data/castle.json')
                         else:
                             dev_console_print('Bzzzrt! Type HELP for instructions.')
 
