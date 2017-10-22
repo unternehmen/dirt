@@ -9,7 +9,7 @@ from monsters.rat import Rat
 from monsters.jyesula import Jyesula
 from monsters.proselytizer import Proselytizer
 from monsters.guard import Guard
-from utils import draw_text
+from utils import draw_text, game_time_to_string
 
 # Developer privileges / Allow backtick (`) console.
 dev_enabled = True
@@ -244,25 +244,6 @@ def dir_as_offset(direction):
 
 def tile_at(x, y):
     return world[y * world_width + x]
-
-
-def game_time_to_string(time):
-    hour = math.floor(time / 60)
-    indicator = ''
-
-    if hour >= 12:
-        indicator = 'PM'
-
-        hour -= 12
-    else:
-        indicator = 'AM'
-
-    if hour == 0:
-        hour = 12
-
-    return str(hour) + ":" + ("%02d" % (time % 60, )) + ' ' + indicator
-
-
 
 def dialog_action_throne_room():
     while True:
@@ -560,7 +541,7 @@ if __name__ == '__main__':
 
             # Draw the time of day.
             msg = font.render("Game time: " +
-                                game_time_to_string(game.time),
+                              game_time_to_string(game.time),
                               True, (0, 0, 0))
             window.blit(msg, (170, 44))
 
