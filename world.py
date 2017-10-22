@@ -1,3 +1,5 @@
+import pygame
+import os
 import json
 
 class World(object):
@@ -29,11 +31,17 @@ class World(object):
         self.width = j['width']
         self.height = j['height']
         self.tiles = j['tiles']
+        self.bgm_path = j['bgm']
+
+        # Play the world's music.
+        pygame.mixer.music.load(os.path.join('data', self.bgm_path))
+        pygame.mixer.music.play(loops=-1)
 
     def save(self, filename):
         j = {
             'width': self.width,
             'height': self.height,
+            'bgm': self.bgm_path,
             'tiles': self.tiles
         }
         

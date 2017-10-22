@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # dirt.py - a low fantasy adventure game set in Maya
-
-import sys, pygame, math, random
+import sys, pygame, math, random, os
 from collections import namedtuple
 from pygame.locals import *
 from dialogmanager import DialogManager, Say, Choose, BigMessage
@@ -95,7 +94,7 @@ NUM_DIRS = 4
 # Define the different kinds of tile.
 TileKind = namedtuple('TileKind', 'is_solid img')
 tile_kinds = {
-    0: TileKind(is_solid=False, img=None),
+    0: TileKind(is_solid=False, img='data/plain_floor.png'),
     1: TileKind(is_solid=True, img="data/wall_plain.png"),
     2: TileKind(is_solid=True, img="data/door_plain.png"),
     3: TileKind(is_solid=True, img="data/column_plain.png"),
@@ -377,6 +376,7 @@ if __name__ == '__main__':
     money_sixteen = pygame.image.load('data/money_sixteen.png')
     money_thirtytwo = pygame.image.load('data/money_thirtytwo.png')
     ui_frame_img = pygame.image.load('data/ui_frame.png')
+    plain_floor_img = pygame.image.load('data/plain_floor.png')
     wall_plain_img = pygame.image.load('data/wall_plain.png')
     wall_plain_flipped_img = pygame.transform.flip(wall_plain_img,
                                                    True,
@@ -440,10 +440,6 @@ if __name__ == '__main__':
     world = World()
     world.load('data/castle.json')
 
-    # Set up and play the music.
-    pygame.mixer.music.load('data/magic-town.ogg')
-    pygame.mixer.music.play(loops=-1)
-
     # new DialogManager system
     dialog_manager = DialogManager()
     dialog_manager.start(dialog_action_read_lettre)
@@ -462,7 +458,7 @@ if __name__ == '__main__':
 
             # Draw the sky.
             if skybox[player.facing] is not None:
-                window.blit(skybox[player.facing], (0, 0), (0, 0, 160, 89))
+                window.blit(skybox[player.facing], (0, 0))# (0, 0, 160, 89))
 
             # Draw the world.
             draw_world(window,
@@ -581,34 +577,38 @@ if __name__ == '__main__':
                             elif event.key == K_UP:
                                 # Attempt to move the player forward.
                                 offset = dir_as_offset(player.facing)
-                                if not tile_kinds[world.at(player.x + offset[0],
-                                                  player.y + offset[1])].is_solid:
-                                    player.x += offset[0]
-                                    player.y += offset[1]
-                                    player.pass_time()
+                                if player.x + offset[0] >= 0 and \
+                                   player.x + offset[0] < world.width and \
+                                   player.y + offset[1] >= 0 and \
+                                   player.y + offset[1] < world.height:
+                                    if not tile_kinds[world.at(player.x + offset[0],
+                                                              player.y + offset[1])].is_solid:
+                                        player.x += offset[0]
+                                        player.y += offset[1]
+                                        player.pass_time()
 
-                                    if player.is_in_battle():
-                                        player.get_opponent().follow(player)
-                                else:
-                                    target = (player.x + offset[0],
-                                              player.y + offset[1])
-                                    if target == (14, 18):
-                                        dialog_manager.start(dialog_action_tavern, player)
-                                    elif target == (12, 29):
-                                        # Enter the throne room of Jyesula.
-                                        if game.time < 60 * 6 or game.time >= 60 * 19:
-                                            backdrop = night_throne_img
-                                        else:
-                                            backdrop = day_throne_img
-
-                                        dialog_manager.start(dialog_action_throne_room, backdrop)
-                                    elif target == (10, 16):
-                                        # Enter the ghost room.
-                                        dialog_manager.start(dialog_action_ghost, ghost_img)
-                                    elif target == (12, 15):
-                                        dialog_manager.start(dialog_action_guard_blocks_you)
-                                    elif world.at(*target) == 2:
-                                        dialog_manager.start(dialog_action_its_locked)
+                                        if player.is_in_battle():
+                                            player.get_opponent().follow(player)
+                                    else:
+                                        target = (player.x + offset[0],
+                                                  player.y + offset[1])
+                                        if target == (14, 18):
+                                            dialog_manager.start(dialog_action_tavern, player)
+                                        elif target == (12, 29):
+                                            # Enter the throne room of Jyesula.
+                                            if game.time < 60 * 6 or game.time >= 60 * 19:
+                                                backdrop = night_throne_img
+                                            else:
+                                                backdrop = day_throne_img
+    
+                                            dialog_manager.start(dialog_action_throne_room, backdrop)
+                                        elif target == (10, 16):
+                                            # Enter the ghost room.
+                                            dialog_manager.start(dialog_action_ghost, ghost_img)
+                                        elif target == (12, 15):
+                                            dialog_manager.start(dialog_action_guard_blocks_you)
+                                        elif world.at(*target) == 2:
+                                            dialog_manager.start(dialog_action_its_locked)
                             elif event.key == K_DOWN:
                                 # Attempt to move the player backward.
                                 offset = dir_as_offset(player.facing)
@@ -695,6 +695,8 @@ if __name__ == '__main__':
                                 dev_console_print('  LOADMAP <filename>')
                                 dev_console_print('  EDITMAP')
                                 dev_console_print('  SAVEMAP <filename>')
+                                dev_console_print('  SETMUSIC <filename>')
+                                dev_console_print('    (relative to ./data/)')
                                 dev_console_print('  TELEPORT <x> <y>')
                                 dev_console_print('Press backtick(`) to return to the game.')
                             elif args[0] == 'editmap':
@@ -731,6 +733,14 @@ if __name__ == '__main__':
                                     dev_console_print('Teleported to (%d, %d)' % (x, y))
                                 else:
                                     dev_console_print('usage: teleport <x> <y>')
+                            elif args[0] == 'setmusic':
+                                if len(args) == 2:
+                                    path = args[1]
+                                    world.bgm_path = path
+                                    pygame.mixer.music.load(os.path.join('data', path))
+                                    pygame.mixer.music.play(loops=-1)
+                                else:
+                                    dev_console_print('usage: setmusic <path>')
                             else:
                                 dev_console_print('Bzzzrt! Type HELP for instructions.')
 
