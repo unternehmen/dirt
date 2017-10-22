@@ -688,7 +688,8 @@ The Town of Anstre awaits its fate.
                               True, (0, 0, 0))
             window.blit(msg, (170, 44))
 
-            # Draw the dialogue window if a dialogue is active.
+            # Do not be fooled --
+            # The following code is for drawing Jyesula's lettre at the beginning of the game.
             if in_dialogue:
                 cursor = 0
 
