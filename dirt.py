@@ -605,7 +605,7 @@ if __name__ == '__main__':
     night_throne_img = pygame.image.load('data/night_throne.png')
     day_throne_img = pygame.image.load('data/day_throne.png')
     ghost_img = pygame.image.load('data/ghost.png')
-    spike_sound = pygame.mixer.Sound('data/blow.ogg')
+    spike_sound = pygame.mixer.Sound('data/blow.wav')
 
     # Load images for all tiles.
     TileImage = namedtuple('TileImage', 'regular flipped')
