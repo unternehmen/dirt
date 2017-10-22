@@ -459,79 +459,75 @@ def dialog_action_ghost():
         elif result == 2:
             break
 
-class WorldRenderSystem(object):
-    def __init__(self):
-        pass
+def draw_world(window, x, y, facing, world_width, world_height, tile_kinds, tile_images):
+    farness_vec = 0
+    strafe_vec = 0
 
-    def draw(self, window, x, y, facing, world_width, world_height, tile_kinds, tile_images):
-        farness_vec = 0
-        strafe_vec = 0
+    farness_vec = dir_as_offset(facing)
+    strafe_vec = [-farness_vec[1], -farness_vec[0]]
 
-        farness_vec = dir_as_offset(facing)
-        strafe_vec = [-farness_vec[1], -farness_vec[0]]
+    if farness_vec[0] == 1:
+        strafe_vec[1] *= -1
+    elif farness_vec[0] == -1:
+        strafe_vec[1] *= -1
 
-        if farness_vec[0] == 1:
-            strafe_vec[1] *= -1
-        elif farness_vec[0] == -1:
-            strafe_vec[1] *= -1
+    strafe_vec = tuple(strafe_vec)
 
-        strafe_vec = tuple(strafe_vec)
+    for farness in range(3, -1, -1):
+        for berth in range(-3, 1):
+            sides = []
 
-        for farness in range(3, -1, -1):
-            for berth in range(-3, 1):
-                sides = []
+            if berth == 0:
+                sides = [0]
+            else:
+                sides = [berth, -berth]
 
-                if berth == 0:
-                    sides = [0]
+            for strafe in sides:
+                if farness == 1 and abs(strafe) > 2:
+                    continue
+
+                if farness == 0 and abs(strafe) > 1:
+                    continue
+
+                # Locate the selected tile in the world.
+                pos_x = x + \
+                        (farness_vec[0] * farness) + \
+                        (strafe_vec[0] * strafe)
+                pos_y = y + \
+                        (farness_vec[1] * farness) + \
+                        (strafe_vec[1] * strafe)
+
+                # If the tile is off-world, refuse to draw it.
+                if pos_x < 0 or pos_x >= world_width or \
+                   pos_y < 0 or pos_y >= world_height:
+                    continue
+
+                tile = tile_at(pos_x, pos_y)
+                tile_img = tile_kinds[tile].img
+
+                if tile_img == None:
+                    continue
+
+                surf = None
+
+                # Determine which part of the tile image to draw.
+                clip_x = 0
+
+                if strafe <= 0:
+                    surf = tile_images[tile_img].regular
+                    clip_x = 480 + (160 * strafe)
                 else:
-                    sides = [berth, -berth]
+                    surf = tile_images[tile_img].flipped
+                    clip_x = 160 * strafe
 
-                for strafe in sides:
-                    if farness == 1 and abs(strafe) > 2:
-                        continue
+                clip_y = 480 - (160 * farness)
 
-                    if farness == 0 and abs(strafe) > 1:
-                        continue
+                # Draw the tile.
+                window.blit(surf, (0, 0),
+                            (clip_x, clip_y, 160, 160))
 
-                    # Locate the selected tile in the world.
-                    pos_x = x + \
-                            (farness_vec[0] * farness) + \
-                            (strafe_vec[0] * strafe)
-                    pos_y = y + \
-                            (farness_vec[1] * farness) + \
-                            (strafe_vec[1] * strafe)
-
-                    # If the tile is off-world, refuse to draw it.
-                    if pos_x < 0 or pos_x >= world_width or \
-                       pos_y < 0 or pos_y >= world_height:
-                        continue
-
-                    tile = tile_at(pos_x, pos_y)
-                    tile_img = tile_kinds[tile].img
-
-                    if tile_img == None:
-                        continue
-
-                    surf = None
-
-                    # Determine which part of the tile image to draw.
-                    clip_x = 0
-
-                    if strafe <= 0:
-                        surf = tile_images[tile_img].regular
-                        clip_x = 480 + (160 * strafe)
-                    else:
-                        surf = tile_images[tile_img].flipped
-                        clip_x = 160 * strafe
-
-                    clip_y = 480 - (160 * farness)
-
-                    # Draw the tile.
-                    window.blit(surf, (0, 0),
-                                (clip_x, clip_y, 160, 160))
-
-                    if strafe == 0:
-                        break
+                if strafe == 0:
+                    break
 
 
 if __name__ == '__main__':
@@ -629,9 +625,6 @@ if __name__ == '__main__':
     # new DialogManager system
     dialog_manager = DialogManager()
 
-    # make the WorldRenderSystem
-    world_render_system = WorldRenderSystem()
-
     # Basic dialog splash screens
     in_dialogue = True
     dialogue_text = """Dear Jyesula,
@@ -669,10 +662,10 @@ The Town of Anstre awaits its fate.
                 window.blit(skybox[player.facing], (0, 0), (0, 0, 160, 89))
 
             # Draw the world.
-            world_render_system.draw(window,
-                                     player.x, player.y, player.facing,
-                                     world_width, world_height,
-                                     tile_kinds, tile_images)
+            draw_world(window,
+                       player.x, player.y, player.facing,
+                       world_width, world_height,
+                       tile_kinds, tile_images)
 
             # Draw the dialog if it is active.
             if dialog_manager.is_active():
