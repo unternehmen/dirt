@@ -92,16 +92,21 @@ WEST     = 3
 NUM_DIRS = 4
 
 # Define the different kinds of tile.
-TileKind = namedtuple('TileKind', 'is_beneath is_solid img')
+# Fields:
+#   substrate - what tile's image should be drawn under this (or None)
+#   is_beneath - whether the tile should be draw under other tiles
+#   is_solid - whether the player can walk through this tile
+#   img - the path to the tile's image
+TileKind = namedtuple('TileKind', 'substrate is_beneath is_solid img')
 tile_kinds = {
-    0: TileKind(is_beneath=True, is_solid=False, img='data/plain_floor.png'),
-    1: TileKind(is_beneath=False, is_solid=True, img="data/wall_plain.png"),
-    2: TileKind(is_beneath=False, is_solid=True, img="data/door_plain.png"),
-    3: TileKind(is_beneath=False, is_solid=True, img="data/column_plain.png"),
-    4: TileKind(is_beneath=False, is_solid=False, img="data/grass_plain.png"),
-    5: TileKind(is_beneath=True, is_solid=False, img="data/floor_bloody.png"),
-    6: TileKind(is_beneath=False, is_solid=True, img="data/spikes.png"),
-    7: TileKind(is_beneath=True, is_solid=False, img="data/floor_glass.png")
+    0: TileKind(substrate=None, is_beneath=True, is_solid=False, img='data/plain_floor.png'),
+    1: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/wall_plain.png"),
+    2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_plain.png"),
+    3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_plain.png"),
+    4: TileKind(substrate=None, is_beneath=False, is_solid=False, img="data/grass_plain.png"),
+    5: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_bloody.png"),
+    6: TileKind(substrate=4, is_beneath=False, is_solid=True, img="data/spikes.png"),
+    7: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_glass.png")
 }
 
 class Game(object):
@@ -321,31 +326,41 @@ def draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_im
                     continue
 
                 tile = world.at(pos_x, pos_y)
-                if tile_kinds[tile].is_beneath != beneathness:
-                    continue
-
                 tile_img = tile_kinds[tile].img
-
-                if tile_img == None:
-                    continue
 
                 surf = None
 
                 # Determine which part of the tile image to draw.
                 clip_x = 0
 
+                substrate_idx = tile_kinds[tile].substrate
+                if substrate_idx is not None:
+                    substrate = tile_kinds[substrate_idx]
+                else:
+                    substrate = None
+                    substrate_img = None
+
                 if strafe <= 0:
                     surf = tile_images[tile_img].regular
+                    if substrate:
+                        substrate_img = tile_images[substrate.img].regular
                     clip_x = 480 + (160 * strafe)
                 else:
                     surf = tile_images[tile_img].flipped
+                    if substrate:
+                        substrate_img = tile_images[substrate.img].flipped
                     clip_x = 160 * strafe
 
                 clip_y = 480 - (160 * farness)
 
                 # Draw the tile.
-                window.blit(surf, (0, 0),
-                            (clip_x, clip_y, 160, 160))
+                kind = tile_kinds[tile]
+                if substrate and substrate.is_beneath == beneathness:
+                    window.blit(substrate_img, (0, 0),
+                                (clip_x, clip_y, 160, 160))
+                if kind.is_beneath == beneathness:
+                    window.blit(surf, (0, 0),
+                                (clip_x, clip_y, 160, 160))
 
                 if strafe == 0:
                     break
