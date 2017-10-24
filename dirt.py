@@ -369,6 +369,15 @@ def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
     draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, True)
     draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, False)
 
+def load_skybox(prefix):
+    path_prefix = os.path.join('data', prefix)
+    return [
+        pygame.image.load(path_prefix + '_north.png'),
+        pygame.image.load(path_prefix + '_east.png'),
+        pygame.image.load(path_prefix + '_south.png'),
+        pygame.image.load(path_prefix + '_west.png')
+    ]
+
 if __name__ == '__main__':
     # Initialize Pygame.
     pygame.init()
@@ -411,23 +420,6 @@ if __name__ == '__main__':
     ghost_img = pygame.image.load('data/ghost.png')
     spike_sound = pygame.mixer.Sound('data/blow.wav')
 
-    # Load sky images
-    night_sky = [
-        pygame.image.load('data/sky_north.png'),
-        pygame.image.load('data/sky_east.png'),
-        pygame.image.load('data/sky_south.png'),
-        pygame.image.load('data/sky_west.png')
-    ]
-
-    day_sky = [
-        pygame.image.load('data/day_north.png'),
-        pygame.image.load('data/day_east.png'),
-        pygame.image.load('data/day_south.png'),
-        pygame.image.load('data/day_west.png')
-    ]
-
-    skybox = list(night_sky) # We'll use the night sky first
-
     # Load images for all tiles.
     TileImage = namedtuple('TileImage', 'regular flipped')
     tile_images = {}
@@ -461,6 +453,12 @@ if __name__ == '__main__':
     world = World()
     world.load('data/castle.json')
 
+    # Load sky images
+    night_sky = load_skybox(world.night_sky_prefix)
+    day_sky = load_skybox(world.day_sky_prefix)
+
+    skybox = night_sky # We'll use the night sky first
+    
     # new DialogManager system
     dialog_manager = DialogManager()
     dialog_manager.start(dialog_action_read_lettre)
@@ -656,9 +654,9 @@ if __name__ == '__main__':
 
                 # Update the sky
                 if game.time < 60 * 6 or game.time >= 60 * 19:
-                    skybox = list(night_sky)
+                    skybox = night_sky
                 else:
-                    skybox = list(day_sky)
+                    skybox = day_sky
 
                 # If the player is in battle, let the enemy attack
                 # and summon the menu.
@@ -719,6 +717,8 @@ if __name__ == '__main__':
                                 dev_console_print('  SETMUSIC <filename>')
                                 dev_console_print('    (relative to ./data/)')
                                 dev_console_print('  TELEPORT <x> <y>')
+                                dev_console_print('  SETDAYSKY <prefix>')
+                                dev_console_print('  SETNIGHTSKY <prefix>')
                                 dev_console_print('Press backtick(`) to return to the game.')
                             elif args[0] == 'editmap':
                                 current_mode = MODE_DEV_MAP_EDITOR
@@ -762,6 +762,24 @@ if __name__ == '__main__':
                                     pygame.mixer.music.play(loops=-1)
                                 else:
                                     dev_console_print('usage: setmusic <path>')
+                            elif args[0] == 'setdaysky':
+                                if len(args) == 2:
+                                    prefix = args[1]
+                                    world.day_sky_prefix = prefix
+                                    day_sky.clear()
+                                    day_sky.extend(load_skybox(prefix))
+                                    dev_console_print('Updated day sky!')
+                                else:
+                                    dev_console_print('usage: setdaysky <prefix>')
+                            elif args[0] == 'setnightsky':
+                                if len(args) == 2:
+                                    prefix = args[1]
+                                    world.night_sky_prefix = prefix
+                                    night_sky.clear()
+                                    night_sky.extend(load_skybox(prefix))
+                                    dev_console_print('Updated night sky!')
+                                else:
+                                    dev_console_print('usage: setnightsky <prefix>')
                             else:
                                 dev_console_print('Bzzzrt! Type HELP for instructions.')
 

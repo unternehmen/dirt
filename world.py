@@ -7,6 +7,9 @@ class World(object):
         self.width = 0
         self.height = 0
         self.tiles = []
+        self.bgm_path = os.path.join('data', 'magictown.ogg')
+        self.day_sky_prefix = 'day'
+        self.night_sky_prefix = 'sky'
 
     def at(self, x, y):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
@@ -32,6 +35,8 @@ class World(object):
         self.height = j['height']
         self.tiles = j['tiles']
         self.bgm_path = j['bgm']
+        self.day_sky_prefix = j['day_sky_prefix']
+        self.night_sky_prefix = j['night_sky_prefix']
 
         # Play the world's music.
         pygame.mixer.music.load(os.path.join('data', self.bgm_path))
@@ -42,6 +47,8 @@ class World(object):
             'width': self.width,
             'height': self.height,
             'bgm': self.bgm_path,
+            'day_sky_prefix': self.day_sky_prefix,
+            'night_sky_prefix': self.night_sky_prefix,
             'tiles': self.tiles
         }
         
