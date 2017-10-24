@@ -742,6 +742,8 @@ if __name__ == '__main__':
                             elif args[0] == 'loadmap':
                                 if len(args) == 2:
                                     world.load(args[1])
+                                    day_sky[0:4] = load_skybox(world.day_sky_prefix)
+                                    night_sky[0:4] = load_skybox(world.night_sky_prefix)
                                     dev_console_print('Loaded map %s' % args[1])
                                 else:
                                     dev_console_print('usage: loadmap <filename>')
