@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # dirt.py - a low fantasy adventure game set in Maya
-import sys, pygame, math, random, os
+import sys, pygame, math, random, os, itertools
 from collections import namedtuple
 from pygame.locals import *
 from dialogmanager import DialogManager, Say, Choose, BigMessage
@@ -12,6 +12,8 @@ from monsters.guard import Guard
 from utils import draw_text, game_time_to_string
 
 # Developer privileges / Allow backtick (`) console.
+allow_edit = False
+edit_mode_chosen_tile = 3
 dev_enabled = True
 dev_console_lines = [
     'Welcome to JAULD OS v1.2',
@@ -74,14 +76,9 @@ key_chars = {
     pygame.K_PERIOD: '.'
 }
 
-# Map editor
-dev_map_editor_pan_x = 0
-dev_map_editor_pan_y = 0
-
 # Modes that the program can be in.
-MODE_GAME           = 0
-MODE_DEV_CONSOLE    = 1
-MODE_DEV_MAP_EDITOR = 2
+MODE_GAME        = 0
+MODE_DEV_CONSOLE = 1
 current_mode = MODE_GAME
 
 # Cardinal directions
@@ -282,88 +279,51 @@ def dialog_action_its_locked():
 def dialog_action_guard_blocks_you():
     yield BigMessage('A guard does not let you through.')
 
-def draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, beneathness):
-    farness_vec = 0
-    strafe_vec = 0
+def draw_single_tile(win, forward, right, tile_kinds, tile_images, tile_kind_id, beneathness):
+    tile = tile_kinds[tile_kind_id]
+    
+    if beneathness and tile.substrate is not None:
+        if tile.substrate is not None:
+            draw_single_tile(win, forward, right, tile_kinds, tile_images, tile.substrate, True)
+    elif beneathness == tile.is_beneath:
+        # Just focus on drawing the tile itself.
+        clip_y = 480 - 160 * forward
+        clip_x = 0
+        flip = False
+        
+        if right <= 0:
+            clip_x = 480 + 160 * right
+        else:
+            clip_x = 160 * right
+            flip = True
+        
+        if flip:
+            win.blit(tile_images[tile.img].flipped, (0, 0),
+                     (clip_x, clip_y, 160, 160))
+        else:
+            win.blit(tile_images[tile.img].regular, (0, 0),
+                     (clip_x, clip_y, 160, 160))
 
-    farness_vec = dir_as_offset(facing)
-    strafe_vec = [-farness_vec[1], -farness_vec[0]]
-
-    if farness_vec[0] == 1:
-        strafe_vec[1] *= -1
-    elif farness_vec[0] == -1:
-        strafe_vec[1] *= -1
-
-    strafe_vec = tuple(strafe_vec)
-
-    for farness in range(3, -1, -1):
-        for berth in range(-3, 1):
-            sides = []
-
-            if berth == 0:
-                sides = [0]
-            else:
-                sides = [berth, -berth]
-
-            for strafe in sides:
-                if farness == 1 and abs(strafe) > 2:
-                    continue
-
-                if farness == 0 and abs(strafe) > 1:
-                    continue
-
-                # Locate the selected tile in the world.
-                pos_x = x + \
-                        (farness_vec[0] * farness) + \
-                        (strafe_vec[0] * strafe)
-                pos_y = y + \
-                        (farness_vec[1] * farness) + \
-                        (strafe_vec[1] * strafe)
-
-                # If the tile is off-world, refuse to draw it.
-                if pos_x < 0 or pos_x >= world.width or \
-                   pos_y < 0 or pos_y >= world.height:
-                    continue
-
+def draw_world_with_beneathness(win, x, y, facing, world, tile_kinds, tile_images, beneathness):
+    angle = 0
+    if facing == NORTH:
+        angle = math.pi/2
+    elif facing == WEST:
+        angle = math.pi
+    elif facing == SOUTH:
+        angle = 3*math.pi/2
+    
+    sa = math.sin(angle)
+    ca = math.cos(angle)
+    for forward in range(3, -1, -1):
+        for right in itertools.chain(range(-3, 0), range(3, -1, -1)):
+            pos_x = x + int(round(forward*ca + right*sa))
+            pos_y = y + int(round(-forward*sa + right*ca))
+            
+            if pos_x >= 0 and pos_x < world.width and \
+               pos_y >= 0 and pos_y < world.height:
                 tile = world.at(pos_x, pos_y)
-                tile_img = tile_kinds[tile].img
-
-                surf = None
-
-                # Determine which part of the tile image to draw.
-                clip_x = 0
-
-                substrate_idx = tile_kinds[tile].substrate
-                if substrate_idx is not None:
-                    substrate = tile_kinds[substrate_idx]
-                else:
-                    substrate = None
-                    substrate_img = None
-
-                if strafe <= 0:
-                    surf = tile_images[tile_img].regular
-                    if substrate:
-                        substrate_img = tile_images[substrate.img].regular
-                    clip_x = 480 + (160 * strafe)
-                else:
-                    surf = tile_images[tile_img].flipped
-                    if substrate:
-                        substrate_img = tile_images[substrate.img].flipped
-                    clip_x = 160 * strafe
-
-                clip_y = 480 - (160 * farness)
-
-                # Draw the tile.
-                kind = tile_kinds[tile]
-                if substrate and substrate.is_beneath == beneathness:
-                    window.blit(substrate_img, (0, 0),
-                                (clip_x, clip_y, 160, 160))
-                if kind.is_beneath == beneathness:
-                    window.blit(surf, (0, 0),
-                                (clip_x, clip_y, 160, 160))
-
-                if strafe == 0:
-                    break
+                draw_single_tile(win, forward, right, tile_kinds, tile_images, tile, beneathness)
 
 def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
     draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, True)
@@ -464,10 +424,13 @@ if __name__ == '__main__':
     dialog_manager.start(dialog_action_read_lettre)
 
     clock = pygame.time.Clock()
+    frame_counter = 0
 
     # Loop until the user quits.
     done = False
     while not done:
+        frame_counter += 1
+        
         if current_mode == MODE_GAME:
             # Update the state of the dialog.
             dialog_manager.update()
@@ -484,6 +447,11 @@ if __name__ == '__main__':
                        player.x, player.y, player.facing,
                        world,
                        tile_kinds, tile_images)
+                       
+            # If we in edit mode, then make flashing tile ahead
+            if allow_edit and frame_counter % 7 < 3:
+                draw_single_tile(window, 1, 0, tile_kinds, tile_images, edit_mode_chosen_tile, True)
+                draw_single_tile(window, 1, 0, tile_kinds, tile_images, edit_mode_chosen_tile, False)
 
             # Draw the enemy if we are in battle.
             if player.is_in_battle():
@@ -563,6 +531,22 @@ if __name__ == '__main__':
                     elif event.key == K_BACKQUOTE:
                         if dev_enabled:
                             current_mode = MODE_DEV_CONSOLE
+                    elif event.key == K_p:
+                        if allow_edit:
+                            # Edit tile ahead
+                            ox, oy = dir_as_offset(player.facing)
+                            tx, ty = player.x + ox, player.y + oy
+                            world.set_at(tx, ty, edit_mode_chosen_tile)
+                    elif event.key == K_h:
+                        if allow_edit:
+                            edit_mode_chosen_tile = edit_mode_chosen_tile - 1
+                            if edit_mode_chosen_tile < 0:
+                                edit_mode_chosen_tile += len(tile_kinds)
+                    elif event.key == K_t:
+                        if allow_edit:
+                            edit_mode_chosen_tile = edit_mode_chosen_tile + 1
+                            if edit_mode_chosen_tile >= len(tile_kinds):
+                                edit_mode_chosen_tile -= len(tile_kinds)
                     elif player.is_in_menu() and player.is_in_battle():
                         # Handle battle menu navigation and choosing.
                         enemy = player.get_opponent()
@@ -600,11 +584,12 @@ if __name__ == '__main__':
                                    player.x + offset[0] < world.width and \
                                    player.y + offset[1] >= 0 and \
                                    player.y + offset[1] < world.height:
-                                    if not tile_kinds[world.at(player.x + offset[0],
+                                    if allow_edit or not tile_kinds[world.at(player.x + offset[0],
                                                               player.y + offset[1])].is_solid:
                                         player.x += offset[0]
                                         player.y += offset[1]
-                                        player.pass_time()
+                                        if not allow_edit:
+                                            player.pass_time()
 
                                         if player.is_in_battle():
                                             player.get_opponent().follow(player)
@@ -631,11 +616,12 @@ if __name__ == '__main__':
                             elif event.key == K_DOWN:
                                 # Attempt to move the player backward.
                                 offset = dir_as_offset(player.facing)
-                                if not tile_kinds[world.at(player.x - offset[0],
+                                if allow_edit or not tile_kinds[world.at(player.x - offset[0],
                                                            player.y - offset[1])].is_solid:
                                     player.x -= offset[0]
                                     player.y -= offset[1]
-                                    player.pass_time()
+                                    if not allow_edit:
+                                        player.pass_time()
 
                                     if player.is_in_battle():
                                         player.get_opponent().follow(player)
@@ -707,12 +693,12 @@ if __name__ == '__main__':
                         args = cmd.split()
 
                         if len(args) >= 1:
-                            if args[0] == 'help':
+                            if args[0] == 'help' or args[0] == '?':
                                 dev_console_print('The following commands are available:')
-                                dev_console_print('  HELP')
                                 dev_console_print('  NEWMAP <width> <height>')
                                 dev_console_print('  LOADMAP <filename>')
-                                dev_console_print('  EDITMAP')
+                                dev_console_print('  ALLOWEDIT')
+                                dev_console_print('  DISALLOWEDIT')
                                 dev_console_print('  SAVEMAP <filename>')
                                 dev_console_print('  SETMUSIC <filename>')
                                 dev_console_print('    (relative to ./data/)')
@@ -720,11 +706,10 @@ if __name__ == '__main__':
                                 dev_console_print('  SETDAYSKY <prefix>')
                                 dev_console_print('  SETNIGHTSKY <prefix>')
                                 dev_console_print('Press backtick(`) to return to the game.')
-                            elif args[0] == 'editmap':
-                                current_mode = MODE_DEV_MAP_EDITOR
-                                dev_map_editor_pan_x = 0
-                                dev_map_editor_pan_y = 0
-                                dev_console_print('Started map editor.')
+                            elif args[0] == 'allowedit':
+                                allow_edit = True
+                            elif args[0] == 'disallowedit':
+                                allow_edit = False
                             elif args[0] == 'newmap':
                                 if len(args) == 3:
                                     width = int(args[1])
@@ -804,49 +789,7 @@ if __name__ == '__main__':
             draw_text(font, dev_console_input + '|', (255, 255, 255), window, 0, window.get_height() - font.get_linesize())
             
             pygame.display.flip()
-        elif current_mode == MODE_DEV_MAP_EDITOR:
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    done = True
-                elif e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE:
-                        done = True
-                    elif e.key == pygame.K_BACKQUOTE:
-                        current_mode = MODE_GAME
-                    elif e.key == pygame.K_UP:
-                        dev_map_editor_pan_y -= 1
-                    elif e.key == pygame.K_RIGHT:
-                        dev_map_editor_pan_x += 1
-                    elif e.key == pygame.K_DOWN:
-                        dev_map_editor_pan_y += 1
-                    elif e.key == pygame.K_LEFT:
-                        dev_map_editor_pan_x -= 1
-                    elif e.key in key_chars:
-                        ch = key_chars[e.key]
-                        if ch in '01234567':
-                            tile_x = player.x - dev_map_editor_pan_x
-                            tile_y = player.y - dev_map_editor_pan_y
-                            world.set_at(tile_x, tile_y, int(ch))
-            
-            window.fill((0, 0, 0))
-            
-            for y in range(-6, 6):
-                tile_y = y + player.y - dev_map_editor_pan_y
-                for x in range(-6, 6):
-                    tile_x = x + player.x - dev_map_editor_pan_x
-                    if tile_x >= 0 and tile_x < world.width and tile_y >= 0 and tile_y < world.height:
-                        tile = world.at(tile_x, tile_y)
-
-                        color = (255, 255, 255)
-                        if tile_x == player.x and tile_y == player.y:
-                            color = (255, 0, 0)
-
-                        if x == 0 and y == 0:
-                            draw_text(font, '(  )', (0, 50, 255), window, 16*6 - 16*x - 5, 16*6 - 16*y)
-                        draw_text(font, str(tile), color, window, 16*6 - 16*x, 16*6 - 16*y)
-
-            pygame.display.flip()
-
+        
         # Delay until the next frame.
         clock.tick(40)
 
