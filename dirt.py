@@ -33,48 +33,8 @@ def dev_console_print(s):
     if len(dev_console_lines) > 14:
         dev_console_lines = dev_console_lines[-14:]
 
-# We use this dictionary to get text from user input
-key_chars = {
-    pygame.K_a: 'a',
-    pygame.K_b: 'b',
-    pygame.K_c: 'c',
-    pygame.K_d: 'd',
-    pygame.K_e: 'e',
-    pygame.K_f: 'f',
-    pygame.K_g: 'g',
-    pygame.K_h: 'h',
-    pygame.K_i: 'i',
-    pygame.K_j: 'j',
-    pygame.K_k: 'k',
-    pygame.K_l: 'l',
-    pygame.K_m: 'm',
-    pygame.K_n: 'n',
-    pygame.K_o: 'o',
-    pygame.K_p: 'p',
-    pygame.K_q: 'q',
-    pygame.K_r: 'r',
-    pygame.K_s: 's',
-    pygame.K_t: 't',
-    pygame.K_u: 'u',
-    pygame.K_v: 'v',
-    pygame.K_w: 'w',
-    pygame.K_x: 'x',
-    pygame.K_y: 'y',
-    pygame.K_z: 'z',
-    pygame.K_0: '0',
-    pygame.K_1: '1',
-    pygame.K_2: '2',
-    pygame.K_3: '3',
-    pygame.K_4: '4',
-    pygame.K_5: '5',
-    pygame.K_6: '6',
-    pygame.K_7: '7',
-    pygame.K_8: '8',
-    pygame.K_9: '9',
-    pygame.K_SPACE: ' ',
-    pygame.K_SLASH: '/',
-    pygame.K_PERIOD: '.'
-}
+allowed_console_chars = \
+  'abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV0123456789./ '
 
 # Modes that the program can be in.
 MODE_GAME        = 0
@@ -771,9 +731,9 @@ if __name__ == '__main__':
                                 dev_console_print('Bzzzrt! Type HELP for instructions.')
 
                         dev_console_input = ''
-                    elif e.key in key_chars:
+                    elif e.unicode in allowed_console_chars:
                         # Append a new character
-                        ch = key_chars[e.key]
+                        ch = e.unicode
                         if e.mod & pygame.KMOD_SHIFT:
                             ch = ch.upper()
                         dev_console_input += ch
