@@ -1,3 +1,6 @@
+"""
+The dialogmanager module provides a versatile dialog system.
+"""
 import pygame
 from utils import draw_text
 
@@ -14,6 +17,48 @@ class BigMessage(object):
         self.text = text
 
 class DialogManager(object):
+    """
+    A DialogManager handles input, rendering, and state for a dialog.
+
+    The messages and side effects of dialogs are defined as generators.
+    This allows you to define dialogs in an easy, imperative style.
+    To illustrate, here is a somewhat complex dialog tree:
+
+    def talk_to_old_man():
+        yield Say('I am as old as the hills.  Ask me anything, youngster.')
+
+        while True:
+            answer = yield Choose('Taxes', 'Politics', 'Bye')
+
+            if answer == 0:
+                yield Say('I have not payed in seventy years...')
+            elif answer == 1:
+                yield Say('Who is the emporer now?  Same guy?')
+            elif answer == 2:
+                break
+
+        yield Say('Until next time.')
+
+    Then, in the main loop, hook the dialog system in.
+
+        window = ...
+        font = ...
+        dm = DialogManager()
+
+        # Main loop
+        while True:
+            for event in pygame.event.get():
+                if event.type == KEY_DOWN:
+                    if dm.is_active:
+                        dm.key_pressed(event.key)
+            dm.update()
+            dm.draw(window, font)
+
+    Then, at any point in the main loop, you can start a dialog:
+    
+        backdrop = pygame.image.load(...)
+        dm.start(talk_to_old_man, backdrop)
+    """
     font = None
     bubble_image = None
 
