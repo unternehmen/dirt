@@ -59,3 +59,7 @@ def _jyesula_t_sun(c, ply):
 @jyesula.topic('lettre', 'letter', 'note')
 def _jyesula_t_lettre(c, ply):
     c.log_npc_msg('It seems that\ndanger is afoot.\nJauld, fix it.')
+
+@jyesula.topic('toddtest', 'toddtest json', 'data toddtest json')
+def _jyesula_t_toddtest(c, ply):
+    c.log_npc_msg('It will not do\nto dwell on the past.')
