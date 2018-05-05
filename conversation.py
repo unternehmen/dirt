@@ -80,7 +80,8 @@ class NPCMsgLogEntry(LogEntry):
         self.msg = msg
         
     def __str__(self):
-        return str('%s: %s' % (self.name, self.msg))
+        lines = map(lambda s: '%s: %s' % (self.name, s), self.msg.split('\n'))
+        return '\n'.join(lines)
 
 class NarrativeLogEntry(LogEntry):
     '''A log entry representing a passage of text that is not dialogue.
@@ -203,11 +204,14 @@ class Conversation(object):
     :vartype log: list of :class:`LogEntry`
     :ivar rules: All the rules governing the conversation
     :vartype rules: list of :class:`Rule`
+    :ivar begin_funcs: A list of callbacks that are to be run when conversation begins
+    :vartype begin_funcs: list of functions
     '''
     def __init__(self, default_npc_name):
         self.default_npc_name = default_npc_name
         self.log = []
         self.rules = []
+        self.begin_funcs = []
     
     def prune_log(self):
         '''Prunes the log to the most recent 5 messages.'''
@@ -237,6 +241,13 @@ class Conversation(object):
         self.log.append(NarrativeLogEntry(msg))
         self.prune_log()
     
+    def run_begin_funcs(self, player, *args, **kwargs):
+        '''Runs all the functions that have been added to this conversation's
+        *begin_funcs* list. Arguments are transparently passed down to the
+        functions.'''
+        for f in self.begin_funcs:
+            f(self, player, *args, **kwargs)
+    
     def feed_player_msg(self, msg, player):
         '''Feeds a message from the user to this conversation object.
         Typically, this will elicit a response based on the methods
@@ -251,6 +262,11 @@ class Conversation(object):
         for rule in self.rules:
             if rule.activate(msg, self, player):
                 break
+    
+    def begin(self, func):
+        '''A decorator which adds a callback that runs when conversation begins.'''
+        self.begin_funcs.append(func)
+        return func
     
     def verb(self, name):
         '''A decorator which adds a verb handler to the conversation rules.

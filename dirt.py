@@ -75,6 +75,7 @@ class Game(object):
         self.time = 60 * 5
 
 font = None
+player = None
 
 class Player:
     def __init__(self, x, y):
@@ -180,13 +181,19 @@ def dir_as_offset(direction):
 
 def dialog_action_throne_room():
     while True:
-        result = yield Choose('Bow', 'Beg', 'Talk about...', 'Depart')
-
+        result = yield Choose('Bow', 'Ask for money', 'Talk', 'Depart')
         if result == 0:
             yield Say('You are\nlearning\nmanners\nI see.')
         elif result == 1:
             yield Say('You have\nalways been\nfine without\nmoney')
             yield Say('Why do you\nneed it\nnow?')
+        elif result == 2:
+            player.in_conversation = True
+            player.conversation = convlib.jyesula
+            player.conversation.run_begin_funcs(player, circumstances='throneroom')
+        else:
+            break
+        '''
         elif result == 2:
             while True:
                 result = yield Choose('Lettre', 'Cold Garden',
@@ -203,6 +210,7 @@ def dialog_action_throne_room():
                     break
         elif result == 3:
             break
+        '''
 
 
 def dialog_action_ghost():
@@ -360,9 +368,6 @@ if __name__ == '__main__':
 
     # Set up the player.
     player = Player(12, 16)
-    player.conversation = convlib.jyesula
-    player.conversation.feed_player_msg('hello', player)
-    player.in_conversation = True
 
     # Set up the menu.
     selection = 0
@@ -467,21 +472,29 @@ if __name__ == '__main__':
                               True, (0, 0, 0))
             window.blit(msg, (170, 44))
             
-            if player.conversation is not None and not player.is_in_menu() and not dialog_manager.is_active():
+            # Draw the dialog if it is active.
+            if dialog_manager.is_active():
+                dialog_manager.draw(window, font, draw_choices=(not player.in_conversation))
+            
+            if (player.conversation is not None and not player.is_in_menu() and not dialog_manager.is_active()) or player.in_conversation:
                 log = player.conversation.log
                 lines = []
                 for entry in log:
                     lines += str(entry).split('\n')
                 if player.in_conversation:
                     for i in range(0, min(len(lines), 4)):
-                        draw_text(font, lines[-1 - i], (0, 0, 0), window, 0, 240 - (2+i) * font.get_linesize())
+                        color = (0, 0, 0)
+                        line = lines[-i - 1]
+                        if line.startswith('Jyesula:'):
+                            color = (255, 0, 0)
+                        draw_text(font, line, color, window, 0, 240 - (2+i) * font.get_linesize())
                     draw_text(font, conversation_input + '|', (0, 0, 0), window, 0, 240 - font.get_linesize())
                 else:
                     for i in range(0, min(len(lines), 4)):
-                        draw_text(font, lines[-1 - i], (0, 0, 0), window, 0, 240 - (1+i) * font.get_linesize())
+                        draw_text(font, lines[-1 - i], (128, 128, 128), window, 0, 240 - (1+i) * font.get_linesize())
 
             # Draw the menu if the menu is active.
-            if player.is_in_menu():
+            elif not player.in_conversation and player.is_in_menu():
                 cursor = 165
                 i = 0
 
@@ -495,11 +508,6 @@ if __name__ == '__main__':
 
                     cursor += 18
                     i += 1
-
-
-            # Draw the dialog if it is active.
-            if dialog_manager.is_active():
-                dialog_manager.draw(window, font)
             
             # Update the window.
             pygame.display.flip()
@@ -530,6 +538,21 @@ if __name__ == '__main__':
                             edit_mode_chosen_tile = edit_mode_chosen_tile + 1
                             if edit_mode_chosen_tile >= len(tile_kinds):
                                 edit_mode_chosen_tile -= len(tile_kinds)
+                    elif player.in_conversation:
+                        if event.key == K_RETURN:
+                            player.conversation.feed_player_msg(conversation_input, player)
+                            conversation_input = u''
+                        elif event.key == pygame.K_BACKSPACE:
+                            # Erase the last character
+                            if len(conversation_input) >= 1:
+                                conversation_input = conversation_input[0:-1]
+                        elif event.unicode in allowed_console_chars:
+                            ch = event.unicode
+                            if event.mod & KMOD_SHIFT:
+                                ch = ch.upper()
+                            conversation_input += ch
+                    elif dialog_manager.is_active():
+                            dialog_manager.key_pressed(event.key)
                     elif player.is_in_menu() and player.is_in_battle():
                         # Handle battle menu navigation and choosing.
                         enemy = player.get_opponent()
@@ -548,79 +571,63 @@ if __name__ == '__main__':
                             enemy.suffer(player,
                                          enemy.get_options(player)[selection])
                     else:
-                        if dialog_manager.is_active():
-                            dialog_manager.key_pressed(event.key)
-                        elif player.in_conversation:
-                            if event.key == K_RETURN:
-                                player.conversation.feed_player_msg(conversation_input, player)
-                                conversation_input = u''
-                            elif event.key == pygame.K_BACKSPACE:
-                                # Erase the last character
-                                if len(conversation_input) >= 1:
-                                    conversation_input = conversation_input[0:-1]
-                            elif event.unicode in allowed_console_chars:
-                                ch = event.unicode
-                                if event.mod & KMOD_SHIFT:
-                                    ch = ch.upper()
-                                conversation_input += ch
-                        else:
-                            # Handle player movement.
-                            if event.key == K_RETURN and player.is_in_battle():
-                                player.enter_menu()
-                            elif event.key == K_RIGHT:
-                                # Turn the player right.
-                                player.facing = (player.facing + 1) % NUM_DIRS
-                            elif event.key == K_LEFT:
-                                # Turn the player left.
-                                player.facing = (player.facing - 1) % NUM_DIRS
-                            elif event.key == K_UP:
-                                # Attempt to move the player forward.
-                                offset = dir_as_offset(player.facing)
-                                if player.x + offset[0] >= 0 and \
-                                   player.x + offset[0] < world.width and \
-                                   player.y + offset[1] >= 0 and \
-                                   player.y + offset[1] < world.height:
-                                    if allow_edit or not tile_kinds[world.at(player.x + offset[0],
-                                                              player.y + offset[1])].is_solid:
-                                        player.x += offset[0]
-                                        player.y += offset[1]
-                                        if not allow_edit:
-                                            player.pass_time()
-
-                                        if player.is_in_battle():
-                                            player.get_opponent().follow(player)
-                                    else:
-                                        target = (player.x + offset[0],
-                                                  player.y + offset[1])
-                                        if target == (14, 18):
-                                            dialog_manager.start(dialog_action_tavern, player)
-                                        elif target == (12, 29):
-                                            # Enter the throne room of Jyesula.
-                                            if game.time < 60 * 6 or game.time >= 60 * 19:
-                                                backdrop = night_throne_img
-                                            else:
-                                                backdrop = day_throne_img
-    
-                                            dialog_manager.start(dialog_action_throne_room, backdrop)
-                                        elif target == (10, 16):
-                                            # Enter the ghost room.
-                                            dialog_manager.start(dialog_action_ghost, ghost_img)
-                                        elif target == (12, 15):
-                                            dialog_manager.start(dialog_action_guard_blocks_you)
-                                        elif world.at(*target) == 2:
-                                            dialog_manager.start(dialog_action_its_locked)
-                            elif event.key == K_DOWN:
-                                # Attempt to move the player backward.
-                                offset = dir_as_offset(player.facing)
-                                if allow_edit or not tile_kinds[world.at(player.x - offset[0],
-                                                           player.y - offset[1])].is_solid:
-                                    player.x -= offset[0]
-                                    player.y -= offset[1]
+                        # Handle player movement.
+                        if event.key == K_RETURN and player.is_in_battle():
+                            player.enter_menu()
+                        elif event.key == K_RIGHT:
+                            # Turn the player right.
+                            player.facing = (player.facing + 1) % NUM_DIRS
+                        elif event.key == K_LEFT:
+                            # Turn the player left.
+                            player.facing = (player.facing - 1) % NUM_DIRS
+                        elif event.key == K_UP:
+                            # Attempt to move the player forward.
+                            offset = dir_as_offset(player.facing)
+                            if player.x + offset[0] >= 0 and \
+                               player.x + offset[0] < world.width and \
+                               player.y + offset[1] >= 0 and \
+                               player.y + offset[1] < world.height:
+                                if allow_edit or not tile_kinds[world.at(player.x + offset[0],
+                                                          player.y + offset[1])].is_solid:
+                                    player.x += offset[0]
+                                    player.y += offset[1]
                                     if not allow_edit:
                                         player.pass_time()
 
                                     if player.is_in_battle():
                                         player.get_opponent().follow(player)
+                                else:
+                                    target = (player.x + offset[0],
+                                              player.y + offset[1])
+                                    if target == (14, 18):
+                                        dialog_manager.start(dialog_action_tavern, player)
+                                    elif target == (12, 29):
+                                        # Enter the throne room of Jyesula.
+                                        if game.time < 60 * 6 or game.time >= 60 * 19:
+                                            backdrop = night_throne_img
+                                        else:
+                                            backdrop = day_throne_img
+
+                                        dialog_manager.start(dialog_action_throne_room, backdrop)
+                                    elif target == (10, 16):
+                                        # Enter the ghost room.
+                                        dialog_manager.start(dialog_action_ghost, ghost_img)
+                                    elif target == (12, 15):
+                                        dialog_manager.start(dialog_action_guard_blocks_you)
+                                    elif world.at(*target) == 2:
+                                        dialog_manager.start(dialog_action_its_locked)
+                        elif event.key == K_DOWN:
+                            # Attempt to move the player backward.
+                            offset = dir_as_offset(player.facing)
+                            if allow_edit or not tile_kinds[world.at(player.x - offset[0],
+                                                       player.y - offset[1])].is_solid:
+                                player.x -= offset[0]
+                                player.y -= offset[1]
+                                if not allow_edit:
+                                    player.pass_time()
+
+                                if player.is_in_battle():
+                                    player.get_opponent().follow(player)
 
             # If the enemy died, end the battle.
             if player.is_in_battle() and player.get_opponent().is_dead():

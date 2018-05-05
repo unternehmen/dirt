@@ -136,7 +136,7 @@ class DialogManager(object):
                 self.timer = 0
                 self._advance()
 
-    def draw(self, window, font):
+    def draw(self, window, font, draw_choices=True):
         # Draw the backdrop if applicable.
         if self.mode != 'inactive' and self.backdrop is not None:
             window.blit(self.backdrop, (0, 0))
@@ -149,16 +149,17 @@ class DialogManager(object):
                       window, 10, 10)
         elif self.mode == 'choosing':
             # Draw the choices.
-            cursor = 165
-            for i, choice in enumerate(self.choices):
-                block = font.render(choice, True, (0, 0, 0))
+            if draw_choices:
+                cursor = 165
+                for i, choice in enumerate(self.choices):
+                    block = font.render(choice, True, (0, 0, 0))
 
-                window.blit(block, (10, cursor))
+                    window.blit(block, (10, cursor))
 
-                if i == self.selection:
-                    window.fill((0, 0, 0), (3, cursor + 5, 4, 4))
+                    if i == self.selection:
+                        window.fill((0, 0, 0), (3, cursor + 5, 4, 4))
 
-                cursor += 18
+                    cursor += 18
         elif self.mode == 'bigmessage':
             window.fill((255, 255, 255))
             draw_text(font, self.text, (0, 0, 0), window, 20, 20)
