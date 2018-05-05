@@ -9,6 +9,7 @@ from monsters.rat import Rat
 from monsters.jyesula import Jyesula
 from monsters.proselytizer import Proselytizer
 from monsters.guard import Guard
+import convlib
 from utils import draw_text, game_time_to_string
 
 # Developer privileges / Allow backtick (`) console.
@@ -34,7 +35,7 @@ def dev_console_print(s):
         dev_console_lines = dev_console_lines[-14:]
 
 allowed_console_chars = \
-  'abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV0123456789./ '
+  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./ '
 
 # Modes that the program can be in.
 MODE_GAME        = 0
@@ -83,6 +84,8 @@ class Player:
         self.facing = SOUTH
         self.opponent = None
         self.in_menu = False
+        self.conversation = None
+        self.in_conversation = False
         self.time_passed = False
         self.x = x
         self.y = y
@@ -144,6 +147,10 @@ class Player:
         "Return whether the player is in a menu."
         return self.in_menu
 
+    def is_in_conversation(self):
+        "Return whether the player is in a new-style conversation."
+        return self.in_conversation
+    
     def enter_battle(self, opponent):
         "Make the player enter battle."
         self.opponent = opponent
@@ -353,6 +360,9 @@ if __name__ == '__main__':
 
     # Set up the player.
     player = Player(12, 16)
+    player.conversation = convlib.jyesula
+    player.conversation.feed_player_msg('hello', player)
+    player.in_conversation = True
 
     # Set up the menu.
     selection = 0
@@ -372,6 +382,8 @@ if __name__ == '__main__':
     game = Game()
     world = World()
     world.load('data/castle.json')
+    
+    conversation_input = ''
 
     # Load sky images
     night_sky = load_skybox(world.night_sky_prefix)
@@ -454,6 +466,19 @@ if __name__ == '__main__':
                               game_time_to_string(game.time),
                               True, (0, 0, 0))
             window.blit(msg, (170, 44))
+            
+            if player.conversation is not None and not player.is_in_menu() and not dialog_manager.is_active():
+                log = player.conversation.log
+                lines = []
+                for entry in log:
+                    lines += str(entry).split('\n')
+                if player.in_conversation:
+                    for i in range(0, min(len(lines), 4)):
+                        draw_text(font, lines[-1 - i], (0, 0, 0), window, 0, 240 - (2+i) * font.get_linesize())
+                    draw_text(font, conversation_input + '|', (0, 0, 0), window, 0, 240 - font.get_linesize())
+                else:
+                    for i in range(0, min(len(lines), 4)):
+                        draw_text(font, lines[-1 - i], (0, 0, 0), window, 0, 240 - (1+i) * font.get_linesize())
 
             # Draw the menu if the menu is active.
             if player.is_in_menu():
@@ -491,19 +516,17 @@ if __name__ == '__main__':
                     elif event.key == K_BACKQUOTE:
                         if dev_enabled:
                             current_mode = MODE_DEV_CONSOLE
-                    elif event.key == K_p:
-                        if allow_edit:
+                    elif allow_edit:
+                        if event.key == K_p:
                             # Edit tile ahead
                             ox, oy = dir_as_offset(player.facing)
                             tx, ty = player.x + ox, player.y + oy
                             world.set_at(tx, ty, edit_mode_chosen_tile)
-                    elif event.key == K_h:
-                        if allow_edit:
+                        elif event.key == K_h:
                             edit_mode_chosen_tile = edit_mode_chosen_tile - 1
                             if edit_mode_chosen_tile < 0:
                                 edit_mode_chosen_tile += len(tile_kinds)
-                    elif event.key == K_t:
-                        if allow_edit:
+                        elif event.key == K_t:
                             edit_mode_chosen_tile = edit_mode_chosen_tile + 1
                             if edit_mode_chosen_tile >= len(tile_kinds):
                                 edit_mode_chosen_tile -= len(tile_kinds)
@@ -527,6 +550,19 @@ if __name__ == '__main__':
                     else:
                         if dialog_manager.is_active():
                             dialog_manager.key_pressed(event.key)
+                        elif player.in_conversation:
+                            if event.key == K_RETURN:
+                                player.conversation.feed_player_msg(conversation_input, player)
+                                conversation_input = u''
+                            elif event.key == pygame.K_BACKSPACE:
+                                # Erase the last character
+                                if len(conversation_input) >= 1:
+                                    conversation_input = conversation_input[0:-1]
+                            elif event.unicode in allowed_console_chars:
+                                ch = event.unicode
+                                if event.mod & KMOD_SHIFT:
+                                    ch = ch.upper()
+                                conversation_input += ch
                         else:
                             # Handle player movement.
                             if event.key == K_RETURN and player.is_in_battle():
