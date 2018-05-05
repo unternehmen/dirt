@@ -224,7 +224,7 @@ def dialog_action_ghost():
         elif result == 2:
             break
 
-def dialog_action_tavern(player):
+def dialog_action_tavern():
     if player.money > 1:
         player.health = player.max_health
         player.money -= 2
@@ -600,7 +600,7 @@ if __name__ == '__main__':
                                     target = (player.x + offset[0],
                                               player.y + offset[1])
                                     if target == (14, 18):
-                                        dialog_manager.start(dialog_action_tavern, player)
+                                        dialog_manager.start(dialog_action_tavern)
                                     elif target == (12, 29):
                                         # Enter the throne room of Jyesula.
                                         if game.time < 60 * 6 or game.time >= 60 * 19:
