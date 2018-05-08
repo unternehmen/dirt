@@ -5,6 +5,9 @@ import OpenGL
 from OpenGL.GL import *
 
 
+SCREEN_WIDTH = 640
+SCREEN_HEIGHT = 480
+SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT
 FPS = 24
 
 
@@ -23,7 +26,7 @@ if __name__ == '__main__':
     pygame.init()
 
     # Open the game window.
-    pygame.display.set_mode((640, 480), OPENGL | DOUBLEBUF)
+    pygame.display.set_mode(SCREEN_SIZE, OPENGL | DOUBLEBUF)
 
     # Set up OpenGL.
     if not glInitGl21VERSION():
