@@ -482,13 +482,15 @@ if __name__ == '__main__':
                 for entry in log:
                     lines += str(entry).split('\n')
                 if player.in_conversation:
+                    # Draw black background for conversation
+                    window.fill((0, 0, 0), (0, 240 - 5 * font.get_linesize(), 320, 5 * font.get_linesize()))
                     for i in range(0, min(len(lines), 4)):
-                        color = (0, 0, 0)
+                        color = (255, 255, 255)
                         line = lines[-i - 1]
                         if line.startswith('Jyesula:'):
                             color = (255, 0, 0)
                         draw_text(font, line, color, window, 0, 240 - (2+i) * font.get_linesize())
-                    draw_text(font, conversation_input + '|', (0, 0, 0), window, 0, 240 - font.get_linesize())
+                    draw_text(font, 'Talk>' + conversation_input + '|', (255, 255, 255), window, 0, 240 - font.get_linesize())
                 else:
                     for i in range(0, min(len(lines), 4)):
                         draw_text(font, lines[-1 - i], (128, 128, 128), window, 0, 240 - (1+i) * font.get_linesize())
