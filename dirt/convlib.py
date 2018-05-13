@@ -1,6 +1,6 @@
 '''Conversation rules for main characters.'''
 
-from conversation import Conversation, SimpleMatchingVerb
+from .conversation import Conversation, SimpleMatchingVerb
 
 # Verb definitions
 

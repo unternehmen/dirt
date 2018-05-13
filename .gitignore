@@ -1,8 +1,18 @@
+# Editor backup files
 *~
 .*.swp
-__pycache__
-tags
+
+# Python files
+__pycache__/
 *.pyc
 
+# CTags
+tags
+
 # Virtual environment
-venv
+/venv/
+
+# Setuptools files
+*.egg-info/
+dist/
+build/

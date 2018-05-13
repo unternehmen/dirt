@@ -3,14 +3,14 @@
 import sys, pygame, math, random, os, itertools
 from collections import namedtuple
 from pygame.locals import *
-from dialogmanager import DialogManager, Say, Choose, BigMessage
-from world import World
-from monsters.rat import Rat
-from monsters.jyesula import Jyesula
-from monsters.proselytizer import Proselytizer
-from monsters.guard import Guard
-import convlib
-from utils import draw_text, game_time_to_string
+from .dialogmanager import DialogManager, Say, Choose, BigMessage
+from .world import World
+from .monsters.rat import Rat
+from .monsters.jyesula import Jyesula
+from .monsters.proselytizer import Proselytizer
+from .monsters.guard import Guard
+import dirt.convlib
+from dirt.utils import draw_text, game_time_to_string, get_resource_stream, load_image, load_sound
 
 # Developer privileges / Allow backtick (`) console.
 allow_edit = False
@@ -305,15 +305,16 @@ def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
     draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, False)
 
 def load_skybox(prefix):
-    path_prefix = os.path.join('data', prefix)
+    path_prefix = 'data/' + prefix
     return [
-        pygame.image.load(path_prefix + '_north.png'),
-        pygame.image.load(path_prefix + '_east.png'),
-        pygame.image.load(path_prefix + '_south.png'),
-        pygame.image.load(path_prefix + '_west.png')
+        load_image(path_prefix + '_north.png'),
+        load_image(path_prefix + '_east.png'),
+        load_image(path_prefix + '_south.png'),
+        load_image(path_prefix + '_west.png')
     ]
 
-if __name__ == '__main__':
+def main():
+    global current_mode, allow_edit
     # Initialize Pygame.
     pygame.init()
     pygame.font.init()
@@ -327,40 +328,40 @@ if __name__ == '__main__':
     window = pygame.display.set_mode((320, 240))
 
     # Load sprites.
-    jauld_img = pygame.image.load('data/jauld.png')
-    proselytizer_img = pygame.image.load('data/proselytizer.png')
-    heart_full_img = pygame.image.load('data/heart_full.png')
-    heart_half_img = pygame.image.load('data/heart_half.png')
-    heart_empty_img = pygame.image.load('data/heart_empty.png')
-    money_one = pygame.image.load('data/money_one.png')
-    money_two = pygame.image.load('data/money_two.png')
-    money_three = pygame.image.load('data/money_three.png')
-    money_four = pygame.image.load('data/money_four.png')
-    money_five = pygame.image.load('data/money_five.png')
-    money_ten = pygame.image.load('data/money_ten.png')
-    money_sixteen = pygame.image.load('data/money_sixteen.png')
-    money_thirtytwo = pygame.image.load('data/money_thirtytwo.png')
-    ui_frame_img = pygame.image.load('data/ui_frame.png')
-    plain_floor_img = pygame.image.load('data/plain_floor.png')
-    wall_plain_img = pygame.image.load('data/wall_plain.png')
+    jauld_img = load_image('data/jauld.png')
+    proselytizer_img = load_image('data/proselytizer.png')
+    heart_full_img = load_image('data/heart_full.png')
+    heart_half_img = load_image('data/heart_half.png')
+    heart_empty_img = load_image('data/heart_empty.png')
+    money_one = load_image('data/money_one.png')
+    money_two = load_image('data/money_two.png')
+    money_three = load_image('data/money_three.png')
+    money_four = load_image('data/money_four.png')
+    money_five = load_image('data/money_five.png')
+    money_ten = load_image('data/money_ten.png')
+    money_sixteen = load_image('data/money_sixteen.png')
+    money_thirtytwo = load_image('data/money_thirtytwo.png')
+    ui_frame_img = load_image('data/ui_frame.png')
+    plain_floor_img = load_image('data/plain_floor.png')
+    wall_plain_img = load_image('data/wall_plain.png')
     wall_plain_flipped_img = pygame.transform.flip(wall_plain_img,
                                                    True,
                                                    False)
-    door_plain_img = pygame.image.load('data/door_plain.png')
+    door_plain_img = load_image('data/door_plain.png')
     door_plain_flipped_img = pygame.transform.flip(door_plain_img,
                                                    True,
                                                    False)
-    night_throne_img = pygame.image.load('data/night_throne.png')
-    day_throne_img = pygame.image.load('data/day_throne.png')
-    ghost_img = pygame.image.load('data/ghost.png')
-    spike_sound = pygame.mixer.Sound('data/blow.wav')
+    night_throne_img = load_image('data/night_throne.png')
+    day_throne_img = load_image('data/day_throne.png')
+    ghost_img = load_image('data/ghost.png')
+    spike_sound = load_sound('data/blow.wav')
 
     # Load images for all tiles.
     TileImage = namedtuple('TileImage', 'regular flipped')
     tile_images = {}
     for kind in tile_kinds.values():
         if kind.img is not None:
-            regular = pygame.image.load(kind.img)
+            regular = load_image(kind.img)
             flipped = pygame.transform.flip(regular, True, False)
             tile_images[kind.img] = \
               TileImage(regular=regular,

@@ -1,4 +1,5 @@
 import pygame
+from dirt.utils import load_sound
 
 class CombatComponent:
     blow_fx = None
@@ -14,7 +15,7 @@ class CombatComponent:
 
         if CombatComponent.blow_fx is None:
             CombatComponent.blow_fx = \
-              pygame.mixer.Sound('data/blow.wav')
+              load_sound('data/blow.wav')
 
     def add_ignore_hook(self, proc):
         self.ignore_hooks += [proc] + self.ignore_hooks

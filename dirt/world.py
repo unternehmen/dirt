@@ -1,6 +1,7 @@
 import pygame
 import os
 import json
+from .utils import get_resource_stream
 
 class World(object):
     def __init__(self):
@@ -27,9 +28,8 @@ class World(object):
         self.tiles = [0] * width * height
 
     def load(self, filename):
-        f = open(filename, 'r')
-        j = json.load(f)
-        f.close()
+        with get_resource_stream(filename) as f:
+            j = json.load(f)
 
         self.width = j['width']
         self.height = j['height']
@@ -39,7 +39,7 @@ class World(object):
         self.night_sky_prefix = j['night_sky_prefix']
 
         # Play the world's music.
-        pygame.mixer.music.load(os.path.join('data', self.bgm_path))
+        pygame.mixer.music.load(get_resource_stream('data/' + self.bgm_path))
         pygame.mixer.music.play(loops=-1)
 
     def save(self, filename):

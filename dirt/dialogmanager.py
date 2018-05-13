@@ -2,7 +2,7 @@
 The dialogmanager module provides a versatile dialog system.
 """
 import pygame
-from utils import draw_text
+from dirt.utils import draw_text, load_image
 
 class Say(object):
     def __init__(self, text):
@@ -82,7 +82,7 @@ class DialogManager(object):
 
         if DialogManager.bubble_image is None:
             DialogManager.bubble_image = \
-              pygame.image.load('data/speech_bubble.png')
+              load_image('data/speech_bubble.png')
 
     def _advance(self, data=None):
         try:

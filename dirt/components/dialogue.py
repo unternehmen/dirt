@@ -1,5 +1,5 @@
 import pygame
-from utils import draw_text
+from dirt.utils import draw_text, load_image
 
 class DialogueComponent:
     font = None
@@ -19,7 +19,7 @@ class DialogueComponent:
 
         if DialogueComponent.bubble_img is None:
             DialogueComponent.bubble_img = \
-              pygame.image.load('data/speech_bubble.png')
+              load_image('data/speech_bubble.png')
 
     def say(self, text):
         self.message_text = text

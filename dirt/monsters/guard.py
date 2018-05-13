@@ -1,6 +1,6 @@
-from components.combat import CombatComponent
-from components.dialogue import DialogueComponent
-from components.body import BodyComponent
+from dirt.components.combat import CombatComponent
+from dirt.components.dialogue import DialogueComponent
+from dirt.components.body import BodyComponent
 
 class Guard:
     def __init__(self):
