@@ -1,16 +1,32 @@
 # What is "dirt"?
 A first-person, turn-based adventure game written in Pygame.
 
-## Dependencies
-This game just depends on Python and Pygame.
-I test the game with these specific versions:
-
-* Python 3.5.3
-* Pygame 1.9.3
-
 ## Running
-Just execute dirt.py using your Python interpreter
-(and make sure Pygame is installed)!
+If you just want to play the game (without developing it), I recommend installing it with `pip` in one of the following ways.
+
+To install it straight from Github (requires Git):
+
+    pip install git+https://github.com/unternehmen/dirt
+
+To install it from a downloaded copy:
+
+    cd dirt-**version**
+    pip install .
+
+After it is installed, you can run it with this command:
+
+    dirt
+
+## Developing
+If you want to develop the game, you should install it in a different
+way.  Clone the repository with Git, i.e.:
+
+    git clone https://github.com/unternehmen/dirt
+
+Then, navigate to the directory and install dirt as "editable":
+
+    cd dirt
+    pip install -e .
 
 ## Screenshots
 ![In this image, the player is in the city near a thin column and a
