@@ -5,10 +5,7 @@ from collections import namedtuple
 from pygame.locals import *
 from .dialogmanager import DialogManager, Say, Choose, BigMessage
 from .world import World
-from .monsters.rat import Rat
-from .monsters.jyesula import Jyesula
-from .monsters.proselytizer import Proselytizer
-from .monsters.guard import Guard
+from .monsters import Rat, Jyesula, Proselytizer, Guard
 import dirt.convlib
 from dirt.utils import draw_text, game_time_to_string, get_resource_stream, load_image, load_sound
 

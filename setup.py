@@ -6,6 +6,7 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     install_requires=['pygame==1.9.3'],
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'dirt = dirt:main'

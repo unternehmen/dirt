@@ -1,0 +1,2 @@
+recursive-include dirt *.ogg *.json *.png *.wav
+include CREDITS LICENSE README.md
