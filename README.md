@@ -10,7 +10,7 @@ To install it straight from Github (requires Git):
 
 To install it from a downloaded copy:
 
-    cd dirt-**version**
+    cd dirt-0.1.0   # Or whichever version you have
     pip install .
 
 After it is installed, you can run it with this command:
