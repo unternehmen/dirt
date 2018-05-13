@@ -29,7 +29,7 @@ class World(object):
 
     def load(self, filename):
         with get_resource_stream(filename) as f:
-            j = json.load(f)
+            j = json.loads(f.read().decode('utf-8'))
 
         self.width = j['width']
         self.height = j['height']
