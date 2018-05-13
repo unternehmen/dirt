@@ -28,6 +28,12 @@ Then, navigate to the directory and install dirt as "editable":
     cd dirt
     pip install -e .
 
+Once it is installed, you can work on the source code as much as you
+want, and the installed copy will stay updated.  To run the program,
+just run the command:
+
+    dirt
+
 ## Screenshots
 ![In this image, the player is in the city near a thin column and a
 passage into the city wall.](screen1.png)
