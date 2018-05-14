@@ -6,7 +6,7 @@ from pygame.locals import *
 from .dialogmanager import DialogManager, Say, Choose, BigMessage
 from .world import World
 from .monsters import Rat, Jyesula, Proselytizer, Guard
-import dirt.convlib
+import dirt.convlib as convlib
 from dirt.utils import draw_text, game_time_to_string, get_resource_stream, load_image, load_sound
 
 # Developer privileges / Allow backtick (`) console.
@@ -177,6 +177,7 @@ def dir_as_offset(direction):
         return -1, 0
 
 def dialog_action_throne_room():
+    global player
     while True:
         result = yield Choose('Bow', 'Ask for money', 'Talk', 'Depart')
         if result == 0:
@@ -190,25 +191,6 @@ def dialog_action_throne_room():
             player.conversation.run_begin_funcs(player, circumstances='throneroom')
         else:
             break
-        '''
-        elif result == 2:
-            while True:
-                result = yield Choose('Lettre', 'Cold Garden',
-                                      'Day and night', 'Nevermind')
-
-                if result == 0:
-                    yield Say('It seems that\ndanger is\nafoot.  Jauld,\nfix it.')
-                elif result == 1:
-                    yield Say('If you find\nmy ring,\nI can return\nto C.G.')
-                    yield Say('But I cannot\ntake you\nwith me.')
-                elif result == 2:
-                    yield Say('The sun goes\ndown quite\nsuddenly,\nyes.')
-                elif result == 3:
-                    break
-        elif result == 3:
-            break
-        '''
-
 
 def dialog_action_ghost():
     while True:
@@ -222,6 +204,8 @@ def dialog_action_ghost():
             break
 
 def dialog_action_tavern():
+    global player
+
     if player.money > 1:
         player.health = player.max_health
         player.money -= 2
@@ -311,7 +295,8 @@ def load_skybox(prefix):
     ]
 
 def main():
-    global current_mode, allow_edit
+    global current_mode, allow_edit, player
+
     # Initialize Pygame.
     pygame.init()
     pygame.font.init()
