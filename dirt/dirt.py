@@ -56,7 +56,7 @@ TileKind = namedtuple('TileKind', 'substrate is_beneath is_solid img')
 tile_kinds = {
     0: TileKind(substrate=None, is_beneath=True, is_solid=False, img='data/plain_floor.png'),
     1: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/wall_plain.png"),
-    2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_plain.png"),
+    2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_fancy.png"),
     3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_plain.png"),
     4: TileKind(substrate=None, is_beneath=False, is_solid=False, img="data/grass_plain.png"),
     5: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_bloody.png"),
@@ -246,19 +246,23 @@ def draw_single_tile(win, forward, right, tile_kinds, tile_images, tile_kind_id,
         clip_y = 480 - 160 * forward
         clip_x = 0
         flip = False
+
+        if right == 0:
+            clip_w = 160
+        else:
+            clip_w = 80
         
         if right <= 0:
+            screen_x_offset = 0
             clip_x = 480 + 160 * right
         else:
-            clip_x = 160 * right
+            screen_x_offset = 80
+            clip_x = 480 - 160 * right + 80
             flip = True
-        
-        if flip:
-            win.blit(tile_images[tile.img].flipped, (0, 0),
-                     (clip_x, clip_y, 160, 160))
-        else:
-            win.blit(tile_images[tile.img].regular, (0, 0),
-                     (clip_x, clip_y, 160, 160))
+
+        win.blit(tile_images[tile.img].regular,
+                 (screen_x_offset, 0),
+                 (clip_x, clip_y, clip_w, 160))
 
 def draw_world_with_beneathness(win, x, y, facing, world, tile_kinds, tile_images, beneathness):
     angle = 0
@@ -327,10 +331,6 @@ def main():
     plain_floor_img = load_image('data/plain_floor.png')
     wall_plain_img = load_image('data/wall_plain.png')
     wall_plain_flipped_img = pygame.transform.flip(wall_plain_img,
-                                                   True,
-                                                   False)
-    door_plain_img = load_image('data/door_plain.png')
-    door_plain_flipped_img = pygame.transform.flip(door_plain_img,
                                                    True,
                                                    False)
     night_throne_img = load_image('data/night_throne.png')
