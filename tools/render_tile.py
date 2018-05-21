@@ -62,7 +62,8 @@ for x in range(-3, 4):
 bpy.context.scene.use_nodes = True
 
 # Create the background image.
-bpy.ops.image.new(name='bg', width=640, height=640, alpha=True)
+bpy.ops.image.new(name='bg', width=640, height=640,
+                  color=(0.0, 0.0, 0.0, 0.0), alpha=True)
 
 # Set up the nodes.
 tree = bpy.context.scene.node_tree
