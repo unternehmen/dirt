@@ -27,8 +27,8 @@ def load_image(path):
 
 bpy.context.scene.use_nodes = False
 render = bpy.context.scene.render
-render.resolution_x = 120
-render.resolution_y = 120
+render.resolution_x = 160
+render.resolution_y = 160
 
 images = {}
 files = []
