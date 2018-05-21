@@ -1,3 +1,6 @@
+# render_tile.py - render tiles at all offsets via Blender
+# Usage:
+#   blender tile.blend -b -P render_tile.py
 import bpy
 from mathutils import Vector
 
