@@ -55,7 +55,7 @@ NUM_DIRS = 4
 TileKind = namedtuple('TileKind', 'substrate is_beneath is_solid img')
 tile_kinds = {
     0: TileKind(substrate=None, is_beneath=True, is_solid=False, img='data/plain_floor.png'),
-    1: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/wall_plain.png"),
+    1: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/wall_fancy.png"),
     2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_fancy.png"),
     3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_plain.png"),
     4: TileKind(substrate=None, is_beneath=False, is_solid=False, img="data/grass_plain.png"),
@@ -329,10 +329,6 @@ def main():
     money_thirtytwo = load_image('data/money_thirtytwo.png')
     ui_frame_img = load_image('data/ui_frame.png')
     plain_floor_img = load_image('data/plain_floor.png')
-    wall_plain_img = load_image('data/wall_plain.png')
-    wall_plain_flipped_img = pygame.transform.flip(wall_plain_img,
-                                                   True,
-                                                   False)
     night_throne_img = load_image('data/night_throne.png')
     day_throne_img = load_image('data/day_throne.png')
     ghost_img = load_image('data/ghost.png')
