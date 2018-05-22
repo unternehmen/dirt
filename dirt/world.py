@@ -1,14 +1,14 @@
 import pygame
 import os
 import json
-from .utils import get_resource_stream
+from .utils import ensure_user_resource_path_exists, get_resource_stream, get_user_resource_path
 
 class World(object):
     def __init__(self):
         self.width = 0
         self.height = 0
         self.tiles = []
-        self.bgm_path = os.path.join('data', 'magictown.ogg')
+        self.bgm_path = 'magictown.ogg'
         self.day_sky_prefix = 'day'
         self.night_sky_prefix = 'sky'
 
@@ -39,7 +39,7 @@ class World(object):
         self.night_sky_prefix = j['night_sky_prefix']
 
         # Play the world's music.
-        pygame.mixer.music.load(get_resource_stream('data/' + self.bgm_path))
+        pygame.mixer.music.load(get_resource_stream(os.path.join('data', self.bgm_path)))
         pygame.mixer.music.play(loops=-1)
 
     def save(self, filename):
@@ -52,6 +52,7 @@ class World(object):
             'tiles': self.tiles
         }
         
-        f = open(filename, 'w')
+        ensure_user_resource_path_exists()
+        f = open(get_user_resource_path(filename), 'w')
         json.dump(j, f)
         f.close()
