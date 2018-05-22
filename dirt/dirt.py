@@ -61,7 +61,7 @@ tile_kinds = {
     4: TileKind(substrate=None, is_beneath=False, is_solid=False, img="data/grass_plain.png"),
     5: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_bloody.png"),
     6: TileKind(substrate=4, is_beneath=False, is_solid=True, img="data/spikes.png"),
-    7: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_glass.png")
+    7: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_glass_fancy.png")
 }
 
 class Game(object):
