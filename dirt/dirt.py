@@ -59,7 +59,7 @@ tile_kinds = {
     2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_fancy.png"),
     3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_fancy.png"),
     4: TileKind(substrate=None, is_beneath=False, is_solid=False, img="data/grass_plain.png"),
-    5: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_bloody.png"),
+    5: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_bloody_fancy.png"),
     6: TileKind(substrate=4, is_beneath=False, is_solid=True, img="data/spikes.png"),
     7: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_glass_fancy.png")
 }
