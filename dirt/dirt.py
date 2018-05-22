@@ -57,7 +57,7 @@ tile_kinds = {
     0: TileKind(substrate=None, is_beneath=True, is_solid=False, img='data/floor_fancy.png'),
     1: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/wall_fancy.png"),
     2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_fancy.png"),
-    3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_plain.png"),
+    3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_fancy.png"),
     4: TileKind(substrate=None, is_beneath=False, is_solid=False, img="data/grass_plain.png"),
     5: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_bloody.png"),
     6: TileKind(substrate=4, is_beneath=False, is_solid=True, img="data/spikes.png"),
@@ -299,7 +299,7 @@ def load_skybox(prefix):
     ]
 
 def main():
-    global current_mode, allow_edit, player
+    global current_mode, allow_edit, player, dev_console_input
 
     # Initialize Pygame.
     pygame.init()
