@@ -43,14 +43,16 @@ def get_resource_stream(path):
     
     f = None
     try:
-        f = open(appdirs.user_data_dir(appname, appauthor), 'rb')
+        full_path = os.path.join(appdirs.user_data_dir(appname, appauthor), path)
+        f = open(full_path, 'rb')
         return f
     except FileNotFoundError:
         pass
     
     # Not in the local one... How about system-wide?
     try:
-        f = open(appdirs.site_data_dir(appname, appauthor), 'rb')
+        full_path = os.path.join(appdirs.site_data_dir(appname, appauthor), path)
+        f = open(full_path, 'rb')
         return f
     except FileNotFoundError:
         pass
