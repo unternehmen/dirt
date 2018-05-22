@@ -1,10 +1,20 @@
 # render_tile.py - render tiles at all offsets via Blender
-# Usage:
+# If rendering a wall (omits front tile):
 #   blender tile.blend -b -P render_tile.py
+# If rendering a floor (includes front tile):
+#   blender tile.blend -b -P render_tile.py -- floor
+import sys
 import bpy
 import os
 from mathutils import Vector
 import tempfile
+
+is_floor = False
+if '--' in sys.argv:
+    argv = sys.argv[sys.argv.index('--') + 1:]
+    if len(argv) > 0:
+        if argv[0] == 'floor':
+            is_floor = True
 
 camera = bpy.data.objects[0]
 
@@ -36,7 +46,7 @@ for x in range(-3, 4):
     for y in range(-2, 2):
         # Skip this position if it is right on top of
         # the player's location.
-        if (x, y) == (0, 1):
+        if not is_floor and (x, y) == (0, 1):
             continue
         
         # Reserve a temporary file to hold the render.
