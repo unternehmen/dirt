@@ -54,7 +54,7 @@ NUM_DIRS = 4
 #   img - the path to the tile's image
 TileKind = namedtuple('TileKind', 'substrate is_beneath is_solid img')
 tile_kinds = {
-    0: TileKind(substrate=None, is_beneath=True, is_solid=False, img='data/plain_floor.png'),
+    0: TileKind(substrate=None, is_beneath=True, is_solid=False, img='data/floor_fancy.png'),
     1: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/wall_fancy.png"),
     2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_fancy.png"),
     3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_plain.png"),
@@ -328,7 +328,6 @@ def main():
     money_sixteen = load_image('data/money_sixteen.png')
     money_thirtytwo = load_image('data/money_thirtytwo.png')
     ui_frame_img = load_image('data/ui_frame.png')
-    plain_floor_img = load_image('data/plain_floor.png')
     night_throne_img = load_image('data/night_throne.png')
     day_throne_img = load_image('data/day_throne.png')
     ghost_img = load_image('data/ghost.png')
