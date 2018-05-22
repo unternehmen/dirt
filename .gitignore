@@ -16,3 +16,9 @@ tags
 *.egg-info/
 dist/
 build/
+
+# Exclude Blender backups ...
+*.blend*
+
+# ... but allow regular blend files
+!*.blend
