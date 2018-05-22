@@ -1,5 +1,7 @@
+import os
 import math
 import pygame
+import appdirs
 from pkg_resources import resource_stream
 
 def draw_text(font, text, color, window, x, y):
@@ -34,10 +36,33 @@ def get_resource_stream(path):
     :param path: the path to the resource
     :returns: a file-like stream to the resource
     """
+    # Resources in the ~/.local/share/dirt or AppData folder should shadow
+    # the packaged resources.
+    appname = 'dirt'
+    appauthor = None
+    
+    f = None
+    try:
+        f = open(appdirs.user_data_dir(appname, appauthor), 'rb')
+        return f
+    except FileNotFoundError:
+        pass
+    
+    # Not in the local one... How about system-wide?
+    try:
+        f = open(appdirs.site_data_dir(appname, appauthor), 'rb')
+        return f
+    except FileNotFoundError:
+        pass
+    
+    # It wasn't found in the user's directories,
+    # so we just use the packaged resource.
     return resource_stream('dirt', path)
     
 def load_image(path):
-    return pygame.image.load(get_resource_stream(path), path)
+    with get_resource_stream(path) as f:
+        return pygame.image.load(f, path)
     
 def load_sound(path):
-    return pygame.mixer.Sound(file=get_resource_stream(path))
+    with get_resource_stream(path) as f:
+        return pygame.mixer.Sound(file=f)
