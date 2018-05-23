@@ -424,7 +424,7 @@ def main():
             window.blit(ui_frame_img, (0, 0))
 
             # Draw the player's avatar.
-            window.blit(jauld_img, (165, 0))
+            window.blit(jauld_img, (166, 0))
 
             # Draw the player's money.
             coins = []
