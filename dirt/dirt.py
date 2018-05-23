@@ -53,16 +53,7 @@ NUM_DIRS = 4
 #   is_solid - whether the player can walk through this tile
 #   img - the path to the tile's image
 TileKind = namedtuple('TileKind', 'substrate is_beneath is_solid img')
-tile_kinds = {
-    0: TileKind(substrate=None, is_beneath=True, is_solid=False, img='data/floor_fancy.png'),
-    1: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/wall_fancy.png"),
-    2: TileKind(substrate=None, is_beneath=False, is_solid=True, img="data/door_fancy.png"),
-    3: TileKind(substrate=0, is_beneath=False, is_solid=True, img="data/column_fancy.png"),
-    4: TileKind(substrate=None, is_beneath=False, is_solid=False, img="data/grass_plain.png"),
-    5: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_bloody_fancy.png"),
-    6: TileKind(substrate=4, is_beneath=False, is_solid=True, img="data/spikes.png"),
-    7: TileKind(substrate=None, is_beneath=True, is_solid=False, img="data/floor_glass_fancy.png")
-}
+tile_kinds = {}
 
 class Game(object):
     """A Game stores information which needs to be everywhere."""
@@ -299,7 +290,7 @@ def load_skybox(prefix):
     ]
 
 def main():
-    global current_mode, allow_edit, player, dev_console_input, edit_mode_chosen_tile
+    global current_mode, allow_edit, player, dev_console_input, edit_mode_chosen_tile, tile_kinds
 
     # Initialize Pygame.
     pygame.init()
@@ -318,9 +309,17 @@ def main():
         for line in f:
             line = line.decode('utf-8')
             mod_name = line.strip()
-            print(mod_name)
             if mod_name:
-                register_mod(mod_name)
+                cfg = register_mod(mod_name)
+                if 'tiles' in cfg:
+                    for tile_id, tile in cfg['tiles'].items():
+                        if 'substrate' not in tile:
+                            tile['substrate'] = None
+                        
+                        tile_kinds[int(tile_id)] = TileKind(substrate=tile['substrate'],
+                                                            is_beneath=tile['is_beneath'],
+                                                            is_solid=tile['is_solid'],
+                                                            img=tile['img'])
 
     # Load sprites.
     jauld_img = load_image('data/jauld.png')

@@ -3,53 +3,53 @@
     "author": "Pingin Jr.",
     
     "spawn_player": {
-        "map": "castle.json"
+        "map": "data/castle.json",
         "x": 12,
         "y": 16
     },
     
     "tiles": {
-        0: {
+        "0": {
             "is_beneath": true,
             "is_solid": false,
-            "img": "floor_fancy.png"
+            "img": "data/floor_fancy.png"
         },
-        1: {
+        "1": {
             "is_beneath": false,
             "is_solid": true,
-            "img": "wall_fancy.png"
+            "img": "data/wall_fancy.png"
         },
-        2: {
+        "2": {
             "is_beneath": false,
             "is_solid": true,
-            "img": "door_fancy.png"
+            "img": "data/door_fancy.png"
         },
-        3: {
+        "3": {
             "substrate": 0,
             "is_beneath": false,
             "is_solid": true,
-            "img": "column_fancy.png"
+            "img": "data/column_fancy.png"
         },
-        4: {
+        "4": {
             "is_beneath": false,
             "is_solid": false,
-            "img": "grass_plain.png"
+            "img": "data/grass_plain.png"
         },
-        5: {
+        "5": {
             "is_beneath": true,
             "is_solid": false,
-            "img": "floor_bloody_fancy.png"
+            "img": "data/floor_bloody_fancy.png"
         },
-        6: {
+        "6": {
             "substrate": 4,
             "is_beneath": false,
             "is_solid": true,
-            "img": "spikes.png"
+            "img": "data/spikes.png"
         },
-        7: {
+        "7": {
             "is_beneath": true,
             "is_solid": false,
-            "img": "floor_glass_fancy.png"
+            "img": "data/floor_glass_fancy.png"
         }
     }
 }
