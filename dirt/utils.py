@@ -1,4 +1,5 @@
 import os
+import json
 import math
 import pygame
 import appdirs
@@ -74,6 +75,13 @@ def get_resource_stream(path):
 def register_mod(mod_name):
     global _mods
     _mods = [mod_name] + _mods
+    
+    cfg = None
+    with get_resource_stream(os.path.join('mods', mod_name, 'config.json')) as f:
+        cfg = json.load(f)
+    print('Registered mod: "%s" by %s' % (cfg['title'], cfg['author']))
+    
+    return cfg
 
 def get_user_resource_path(path):
     """
@@ -89,7 +97,6 @@ def get_user_resource_path(path):
 def get_mod_resource(path):
     for mod_name in _mods:
         p = os.path.join('mods', mod_name, path)
-        print(p)
         res = get_resource_stream(p)
         if res is not None:
             return res
