@@ -89,9 +89,9 @@ def get_user_resource_path(path):
 def get_mod_resource(path):
     for mod_name in _mods:
         p = os.path.join('mods', mod_name, path)
-        print(p)
         res = get_resource_stream(p)
         if res is not None:
+            print(p)
             return res
     
     # Couldn't find the resource...
