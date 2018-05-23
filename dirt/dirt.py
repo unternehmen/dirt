@@ -323,7 +323,7 @@ def main():
                 register_mod(mod_name)
 
     # Load sprites.
-    jauld_img = load_image('data/jauld.png')
+    jauld_img = load_image('data/characters/jauld/face.png')
     proselytizer_img = load_image('data/proselytizer.png')
     heart_full_img = load_image('data/heart_full.png')
     heart_half_img = load_image('data/heart_half.png')
@@ -425,7 +425,7 @@ def main():
             window.blit(ui_frame_img, (0, 0))
 
             # Draw the player's avatar.
-            window.blit(jauld_img, (170, 10))
+            window.blit(jauld_img, (165, 0))
 
             # Draw the player's money.
             coins = []
@@ -445,19 +445,19 @@ def main():
             for i in range(0, player.max_health):
                 if player.health - i <= 0:
                     # Draw an empty heart.
-                    window.blit(heart_empty_img, (190 + (i * 20), 10))
+                    window.blit(heart_empty_img, (200 + (i * 20), 15))
                 elif player.health - i == 0.5:
                     # Draw a half heart.
-                    window.blit(heart_half_img, (190 + (i * 20), 10))
+                    window.blit(heart_half_img, (200 + (i * 20), 15))
                 else:
                     # Draw a full heart.
-                    window.blit(heart_full_img, (190 + (i * 20), 10))
+                    window.blit(heart_full_img, (200 + (i * 20), 15))
 
             # Draw the time of day.
             msg = font.render("Game time: " +
                               game_time_to_string(game.time),
                               True, (0, 0, 0))
-            window.blit(msg, (170, 44))
+            window.blit(msg, (170, 180))
             
             # Draw the dialog if it is active.
             if dialog_manager.is_active():
