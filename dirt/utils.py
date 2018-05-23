@@ -78,7 +78,7 @@ def register_mod(mod_name):
     
     cfg = None
     with get_resource_stream(os.path.join('mods', mod_name, 'config.json')) as f:
-        cfg = json.load(f)
+        cfg = json.loads(f.read().decode('utf-8'))
     print('Registered mod: "%s" by %s' % (cfg['title'], cfg['author']))
     
     return cfg
