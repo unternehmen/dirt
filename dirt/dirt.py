@@ -299,7 +299,7 @@ def load_skybox(prefix):
     ]
 
 def main():
-    global current_mode, allow_edit, player, dev_console_input
+    global current_mode, allow_edit, player, dev_console_input, edit_mode_chosen_tile
 
     # Initialize Pygame.
     pygame.init()
@@ -504,20 +504,6 @@ def main():
                     elif event.key == K_BACKQUOTE:
                         if dev_enabled:
                             current_mode = MODE_DEV_CONSOLE
-                    elif allow_edit:
-                        if event.key == K_p:
-                            # Edit tile ahead
-                            ox, oy = dir_as_offset(player.facing)
-                            tx, ty = player.x + ox, player.y + oy
-                            world.set_at(tx, ty, edit_mode_chosen_tile)
-                        elif event.key == K_h:
-                            edit_mode_chosen_tile = edit_mode_chosen_tile - 1
-                            if edit_mode_chosen_tile < 0:
-                                edit_mode_chosen_tile += len(tile_kinds)
-                        elif event.key == K_t:
-                            edit_mode_chosen_tile = edit_mode_chosen_tile + 1
-                            if edit_mode_chosen_tile >= len(tile_kinds):
-                                edit_mode_chosen_tile -= len(tile_kinds)
                     elif player.in_conversation:
                         if event.key == K_RETURN:
                             player.conversation.feed_player_msg(conversation_input, player)
@@ -608,6 +594,22 @@ def main():
 
                                 if player.is_in_battle():
                                     player.get_opponent().follow(player)
+                        
+                        # Check map editing stuff
+                        if allow_edit:
+                            if event.key == K_p:
+                                # Edit tile ahead
+                                ox, oy = dir_as_offset(player.facing)
+                                tx, ty = player.x + ox, player.y + oy
+                                world.set_at(tx, ty, edit_mode_chosen_tile)
+                            elif event.key == K_h:
+                                edit_mode_chosen_tile = edit_mode_chosen_tile - 1
+                                if edit_mode_chosen_tile < 0:
+                                    edit_mode_chosen_tile += len(tile_kinds)
+                            elif event.key == K_t:
+                                edit_mode_chosen_tile = edit_mode_chosen_tile + 1
+                                if edit_mode_chosen_tile >= len(tile_kinds):
+                                    edit_mode_chosen_tile -= len(tile_kinds)
 
             # If the enemy died, end the battle.
             if player.is_in_battle() and player.get_opponent().is_dead():
