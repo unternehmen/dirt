@@ -7,7 +7,7 @@ from .dialogmanager import DialogManager, Say, Choose, BigMessage
 from .world import World
 from .monsters import Rat, Jyesula, Proselytizer, Guard
 import dirt.convlib as convlib
-from dirt.utils import draw_text, game_time_to_string, get_resource_stream, load_image, load_sound
+from dirt.utils import draw_text, game_time_to_string, get_resource_stream, register_mod, load_image, load_sound
 
 # Developer privileges / Allow backtick (`) console.
 allow_edit = False
@@ -312,6 +312,15 @@ def main():
     # For fullscreen:
     #window = pygame.display.set_mode((320, 240), FULLSCREEN)
     window = pygame.display.set_mode((320, 240))
+    
+    # Load mods.
+    with get_resource_stream('modlist.txt') as f:
+        for line in f:
+            line = line.decode('utf-8')
+            mod_name = line.strip()
+            print(mod_name)
+            if mod_name:
+                register_mod(mod_name)
 
     # Load sprites.
     jauld_img = load_image('data/jauld.png')

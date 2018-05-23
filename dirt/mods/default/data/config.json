@@ -1,0 +1,55 @@
+{
+    "title": "Dirt (Canonical)",
+    "author": "Pingin Jr.",
+    
+    "spawn_player": {
+        "map": "castle.json"
+        "x": 12,
+        "y": 16
+    },
+    
+    "tiles": {
+        0: {
+            "is_beneath": true,
+            "is_solid": false,
+            "img": "floor_fancy.png"
+        },
+        1: {
+            "is_beneath": false,
+            "is_solid": true,
+            "img": "wall_fancy.png"
+        },
+        2: {
+            "is_beneath": false,
+            "is_solid": true,
+            "img": "door_fancy.png"
+        },
+        3: {
+            "substrate": 0,
+            "is_beneath": false,
+            "is_solid": true,
+            "img": "column_fancy.png"
+        },
+        4: {
+            "is_beneath": false,
+            "is_solid": false,
+            "img": "grass_plain.png"
+        },
+        5: {
+            "is_beneath": true,
+            "is_solid": false,
+            "img": "floor_bloody_fancy.png"
+        },
+        6: {
+            "substrate": 4,
+            "is_beneath": false,
+            "is_solid": true,
+            "img": "spikes.png"
+        },
+        7: {
+            "is_beneath": true,
+            "is_solid": false,
+            "img": "floor_glass_fancy.png"
+        }
+    }
+}
