@@ -701,8 +701,10 @@ def main():
                                 dev_console_print('Press backtick(`) to return to the game.')
                             elif args[0] == 'allowedit':
                                 allow_edit = True
+                                dev_console_print('Editing - ALLOWED')
                             elif args[0] == 'disallowedit':
                                 allow_edit = False
+                                dev_console_print('Editing - DISALLOWED')
                             elif args[0] == 'newmap':
                                 if len(args) == 3:
                                     width = int(args[1])
@@ -717,6 +719,12 @@ def main():
                                     dev_console_print('Saved to %s' % args[1])
                                 else:
                                     dev_console_print('usage: savemap <filename>')
+                            elif args[0] == 'savepartials':
+                                if len(args) == 2:
+                                    world.save_partials(args[1])
+                                    dev_console_print('Saved partials to %s' % args[1])
+                                else:
+                                    dev_console_print('usage: savepartials <filename>')
                             elif args[0] == 'loadmap':
                                 if len(args) == 2:
                                     world.load(args[1])

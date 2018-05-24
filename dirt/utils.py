@@ -73,8 +73,7 @@ def get_resource_stream(path):
     return None
     
 def register_mod(mod_name):
-    global _mods
-    _mods = [mod_name] + _mods
+    _mods.append(mod_name)
     
     cfg = None
     with get_resource_stream(os.path.join('mods', mod_name, 'config.json')) as f:
@@ -95,7 +94,7 @@ def get_user_resource_path(path):
     return os.path.join(appdirs.user_data_dir(_APPNAME, _APPAUTHOR), path)
 
 def get_mod_resource(path):
-    for mod_name in _mods:
+    for mod_name in reversed(_mods):
         p = os.path.join('mods', mod_name, path)
         res = get_resource_stream(p)
         if res is not None:
@@ -103,6 +102,31 @@ def get_mod_resource(path):
     
     # Couldn't find the resource...
     raise Exception('Couldn\'t find the mod resource: %s' % path)
+
+def concat_mod_resource(path):
+    """
+    Concatenates a mod resource from all mods in mod registration order.
+    That means that if two mods contain the file "food.txt", then those
+    two files will be concatenated and returned as a string.
+    
+    This allows one to subvert mod-level resource shadowing. However,
+    it does not subvert the shadowing that occurs between the appdata
+    directory and the packaged resources. If a file is shadowed by the
+    appdata directory, it is not included in the concatenation.
+    
+    This method only works for UTF-8 encoded resources.
+    
+    :param str path: the path to the mods' resource
+    :returns: a string made by concatenating the instances of a resource in all mods
+    :rtype: str
+    """
+    file_contents = []
+    for mod_name in _mods:
+        p = os.path.join('mods', mod_name, path)
+        res = get_resource_stream(p)
+        if res is not None:
+            file_contents.append(res.read().decode('utf-8'))
+    return '\n'.join(file_contents)
 
 def load_image(path):
     with get_mod_resource(path) as f:
