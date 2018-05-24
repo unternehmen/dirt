@@ -2,6 +2,7 @@ import pygame
 import os
 import json
 from .utils import get_resource_stream, get_user_resource_path, get_mod_resource
+from .mobs import Mob
 
 class World(object):
     def __init__(self):
@@ -11,6 +12,7 @@ class World(object):
         self.bgm_path = 'magictown.ogg'
         self.day_sky_prefix = 'day'
         self.night_sky_prefix = 'sky'
+        self.mobs = []
 
     def at(self, x, y):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
@@ -37,6 +39,10 @@ class World(object):
         self.bgm_path = j['bgm']
         self.day_sky_prefix = j['day_sky_prefix']
         self.night_sky_prefix = j['night_sky_prefix']
+
+        if 'mobs' in j:
+            for mobdef in j['mobs']:
+                self.mobs.append(Mob(**mobdef))
 
         # Play the world's music.
         pygame.mixer.music.load(get_mod_resource(os.path.join('data', self.bgm_path)))

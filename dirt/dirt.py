@@ -8,6 +8,7 @@ from .world import World
 from .monsters import Rat, Jyesula, Proselytizer, Guard
 import dirt.convlib as convlib
 from dirt.utils import draw_text, game_time_to_string, get_resource_stream, register_mod, load_image, load_sound
+import dirt.mobs as mobs
 
 # Developer privileges / Allow backtick (`) console.
 allow_edit = False
@@ -213,6 +214,25 @@ def dialog_action_its_locked():
 def dialog_action_guard_blocks_you():
     yield BigMessage('A guard does not let you through.')
 
+def draw_section_of_atlas(window, image, u, v):
+    clip_y = 480 - 160 * v
+    clip_x = 0
+
+    if u == 0:
+        clip_w = 160
+    else:
+        clip_w = 80
+        
+    if u <= 0:
+        screen_x_offset = 0
+        clip_x = 480 + 160 * u
+    else:
+        screen_x_offset = 80
+        clip_x = 480 - 160 * u + 80
+
+    window.blit(image, (screen_x_offset, 0),
+                (clip_x, clip_y, clip_w, 160))
+
 def draw_single_tile(win, forward, right, tile_kinds, tile_images, tile_kind_id, beneathness):
     tile = tile_kinds[tile_kind_id]
     
@@ -220,27 +240,8 @@ def draw_single_tile(win, forward, right, tile_kinds, tile_images, tile_kind_id,
         if tile.substrate is not None:
             draw_single_tile(win, forward, right, tile_kinds, tile_images, tile.substrate, True)
     elif beneathness == tile.is_beneath:
-        # Just focus on drawing the tile itself.
-        clip_y = 480 - 160 * forward
-        clip_x = 0
-        flip = False
-
-        if right == 0:
-            clip_w = 160
-        else:
-            clip_w = 80
-        
-        if right <= 0:
-            screen_x_offset = 0
-            clip_x = 480 + 160 * right
-        else:
-            screen_x_offset = 80
-            clip_x = 480 - 160 * right + 80
-            flip = True
-
-        win.blit(tile_images[tile.img].regular,
-                 (screen_x_offset, 0),
-                 (clip_x, clip_y, clip_w, 160))
+        draw_section_of_atlas(win, tile_images[tile.img].regular,
+                              right, forward)
 
 def draw_world_with_beneathness(win, x, y, facing, world, tile_kinds, tile_images, beneathness):
     angle = 0
@@ -262,6 +263,11 @@ def draw_world_with_beneathness(win, x, y, facing, world, tile_kinds, tile_image
                pos_y >= 0 and pos_y < world.height:
                 tile = world.at(pos_x, pos_y)
                 draw_single_tile(win, forward, right, tile_kinds, tile_images, tile, beneathness)
+                if not beneathness:
+                    mobs.render(world, pos_x, pos_y,
+                                lambda image:
+                                  draw_section_of_atlas(
+                                    win, image, right, forward))
 
 def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
     draw_world_with_beneathness(window, x, y, facing, world, tile_kinds, tile_images, True)
