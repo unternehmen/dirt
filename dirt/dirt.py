@@ -95,7 +95,6 @@ class Player:
         This has many effects:
 
         * The game clock advances by one minute.
-        * Enemies re-engage the player if they are in battle.
         * A random encounter might happen.
         """
         self.time_passed = True
@@ -120,17 +119,9 @@ class Player:
         "Return whether the player is dead."
         return self.health <= 0
 
-    def leave_battle(self):
-        "Make the player leave the current battle."
-        self.opponent = None
-
     def leave_menu(self):
         "Make the player leave the current menu."
         self.in_menu = False
-
-    def is_in_battle(self):
-        "Return whether the player is in a battle."
-        return self.opponent is not None
 
     def is_in_menu(self):
         "Return whether the player is in a menu."
@@ -140,10 +131,6 @@ class Player:
         "Return whether the player is in a new-style conversation."
         return self.in_conversation
     
-    def enter_battle(self, opponent):
-        "Make the player enter battle."
-        self.opponent = opponent
-
     def enter_menu(self):
         "Make the player enter the menu."
         self.in_menu = True
@@ -416,10 +403,6 @@ def main():
                 draw_single_tile(window, 1, 0, tile_kinds, tile_images, edit_mode_chosen_tile, True)
                 draw_single_tile(window, 1, 0, tile_kinds, tile_images, edit_mode_chosen_tile, False)
 
-            # Draw the enemy if we are in battle.
-            if player.is_in_battle():
-                player.get_opponent().draw(window)
-
             # Draw the border around the world.
             window.blit(ui_frame_img, (0, 0))
 
@@ -527,28 +510,9 @@ def main():
                             conversation_input += ch
                     elif dialog_manager.is_active():
                             dialog_manager.key_pressed(event.key)
-                    elif player.is_in_menu() and player.is_in_battle():
-                        # Handle battle menu navigation and choosing.
-                        enemy = player.get_opponent()
-
-                        if selection >= len(enemy.get_options(player)):
-                            selection = len(enemy.get_options(player)) - 1
-
-                        if event.key == K_UP:
-                            if selection > 0:
-                                selection -= 1
-                        elif event.key == K_DOWN:
-                            if selection < len(enemy.get_options(player)) - 1:
-                                selection += 1
-                        elif event.key == K_RETURN:
-                            # Select the current menu item.
-                            enemy.suffer(player,
-                                         enemy.get_options(player)[selection])
                     else:
                         # Handle player movement.
-                        if event.key == K_RETURN and player.is_in_battle():
-                            player.enter_menu()
-                        elif event.key == K_RIGHT:
+                        if event.key == K_RIGHT:
                             # Turn the player right.
                             player.facing = (player.facing + 1) % NUM_DIRS
                         elif event.key == K_LEFT:
@@ -568,8 +532,6 @@ def main():
                                     if not allow_edit:
                                         player.pass_time()
 
-                                    if player.is_in_battle():
-                                        player.get_opponent().follow(player)
                                 else:
                                     target = (player.x + offset[0],
                                               player.y + offset[1])
@@ -599,9 +561,6 @@ def main():
                                 player.y -= offset[1]
                                 if not allow_edit:
                                     player.pass_time()
-
-                                if player.is_in_battle():
-                                    player.get_opponent().follow(player)
                         
                         # Check map editing stuff
                         if allow_edit:
@@ -619,13 +578,6 @@ def main():
                                 if edit_mode_chosen_tile >= len(tile_kinds):
                                     edit_mode_chosen_tile -= len(tile_kinds)
 
-            # If the enemy died, end the battle.
-            if player.is_in_battle() and player.get_opponent().is_dead():
-                player.get_opponent().reward(player)
-                player.leave_menu()
-                player.leave_battle()
-                enemy = None
-
             if player.time_has_passed():
                 player.stop_time()
 
@@ -636,32 +588,6 @@ def main():
                     skybox = night_sky
                 else:
                     skybox = day_sky
-
-                # If the player is in battle, let the enemy attack
-                # and summon the menu.
-                if player.is_in_battle():
-                    player.get_opponent().engage(player)
-
-                # Start a random encounter, randomly.
-                if (not player.is_in_battle()
-                        and world.at(player.x, player.y) != 5
-                        and random.randint(0, 30) == 0):
-                    index = random.randint(0,3)
-
-                    if index == 0:
-                        player.enter_battle(Rat())
-                    elif index == 1:
-                        player.enter_battle(Proselytizer())
-                    elif index == 2:
-                        player.enter_battle(Jyesula())
-                    else:
-                        player.enter_battle(Guard())
-
-                    player.enter_menu()
-
-            # If the player is in battle, tick the enemy.
-            if player.is_in_battle():
-                player.get_opponent().tick()
 
             # End the game if the user has died.
             if player.is_dead():
