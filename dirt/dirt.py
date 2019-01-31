@@ -4,7 +4,7 @@ import sys, pygame, math, random, os, itertools
 from collections import namedtuple
 from pygame.locals import *
 from .dialogmanager import DialogManager, Say, Choose, BigMessage
-from .world import World
+from .worldlod import ChunkedWorld
 from .monsters import Rat, Jyesula, Proselytizer, Guard
 import dirt.convlib as convlib
 from dirt.utils import draw_text, game_time_to_string, get_resource_stream, register_mod, load_image, load_sound
@@ -61,6 +61,8 @@ class Game(object):
         """Create a new Game object."""
         # The current minute of the in-game day.
         self.time = 60 * 5
+
+map_name = 'overworld'
 
 font = None
 player = None
@@ -271,9 +273,8 @@ def draw_world_with_beneathness(win, x, y, facing, world, tile_kinds, tile_image
             pos_x = x + int(round(forward*ca + right*sa))
             pos_y = y + int(round(-forward*sa + right*ca))
             
-            if pos_x >= 0 and pos_x < world.width and \
-               pos_y >= 0 and pos_y < world.height:
-                tile = world.at(pos_x, pos_y)
+            tile = world.at(map_name, pos_x, pos_y)
+            if tile is not None:
                 draw_single_tile(win, forward, right, tile_kinds, tile_images, tile, beneathness)
 
 def draw_world(window, x, y, facing, world, tile_kinds, tile_images):
@@ -371,14 +372,13 @@ def main():
     }
     day_length = 60 * 24
     game = Game()
-    world = World()
-    world.load('data/castle.json')
+    world = ChunkedWorld()
     
     conversation_input = ''
 
     # Load sky images
-    night_sky = load_skybox(world.night_sky_prefix)
-    day_sky = load_skybox(world.day_sky_prefix)
+    night_sky = load_skybox('sky')
+    day_sky = load_skybox('day')
 
     skybox = night_sky # We'll use the night sky first
     
@@ -557,12 +557,11 @@ def main():
                         elif event.key == K_UP:
                             # Attempt to move the player forward.
                             offset = dir_as_offset(player.facing)
-                            if player.x + offset[0] >= 0 and \
-                               player.x + offset[0] < world.width and \
-                               player.y + offset[1] >= 0 and \
-                               player.y + offset[1] < world.height:
-                                if allow_edit or not tile_kinds[world.at(player.x + offset[0],
-                                                          player.y + offset[1])].is_solid:
+                            t = world.at(map_name,
+                                         player.x + offset[0],
+                                         player.y + offset[1])
+                            if t is not None:
+                                if allow_edit or not tile_kinds[t].is_solid:
                                     player.x += offset[0]
                                     player.y += offset[1]
                                     if not allow_edit:
@@ -588,13 +587,15 @@ def main():
                                         dialog_manager.start(dialog_action_ghost, ghost_img)
                                     elif target == (12, 15):
                                         dialog_manager.start(dialog_action_guard_blocks_you)
-                                    elif world.at(*target) == 2:
+                                    elif world.at(map_name, *target) == 2:
                                         dialog_manager.start(dialog_action_its_locked)
                         elif event.key == K_DOWN:
                             # Attempt to move the player backward.
                             offset = dir_as_offset(player.facing)
-                            if allow_edit or not tile_kinds[world.at(player.x - offset[0],
-                                                       player.y - offset[1])].is_solid:
+                            t = world.at(map_name,
+                                         player.x - offset[0],
+                                         player.y - offset[1])
+                            if allow_edit or not tile_kinds[t].is_solid:
                                 player.x -= offset[0]
                                 player.y -= offset[1]
                                 if not allow_edit:
@@ -644,7 +645,7 @@ def main():
 
                 # Start a random encounter, randomly.
                 if (not player.is_in_battle()
-                        and world.at(player.x, player.y) != 5
+                        and world.at(map_name, player.x, player.y) != 5
                         and random.randint(0, 30) == 0):
                     index = random.randint(0,3)
 
