@@ -572,9 +572,10 @@ def main():
                                 else:
                                     target = (player.x + offset[0],
                                               player.y + offset[1])
-                                    if target == (14, 18):
+                                    print(target)
+                                    if target == (3, 12):
                                         dialog_manager.start(dialog_action_tavern)
-                                    elif target == (12, 29):
+                                    elif target == (5, 0):
                                         # Enter the throne room of Jyesula.
                                         if game.time < 60 * 6 or game.time >= 60 * 19:
                                             backdrop = night_throne_img
@@ -582,10 +583,10 @@ def main():
                                             backdrop = day_throne_img
 
                                         dialog_manager.start(dialog_action_throne_room, backdrop)
-                                    elif target == (10, 16):
+                                    elif target == (7, 13):
                                         # Enter the ghost room.
                                         dialog_manager.start(dialog_action_ghost, ghost_img)
-                                    elif target == (12, 15):
+                                    elif target == (9, 9):
                                         dialog_manager.start(dialog_action_guard_blocks_you)
                                     elif world.at(map_name, *target) == 2:
                                         dialog_manager.start(dialog_action_its_locked)
