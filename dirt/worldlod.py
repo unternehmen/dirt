@@ -1,4 +1,5 @@
 import os.path
+import operator
 import math
 import json
 from .utils import get_resource_stream, get_user_resource_path, get_mod_resource
@@ -41,7 +42,6 @@ class Chunk(object):
         self.map_name = map_name
         self.column = chunk_column
         self.row = chunk_row
-        #self.mob_inits = j['mob_inits']
 
         print('Loading %s... ' % filename, end='')
 
@@ -52,11 +52,12 @@ class Chunk(object):
         except Exception:
             # Could be anything really...
             # TODO: Make get_mod_resource throw a specific exception
-            self.tiles = [0] * Chunk.WIDTH_IN_TILES * Chunk.HEIGHT_IN_TILES
-            print('Failed. Using zero chunk')
+            self.tiles = [None] * Chunk.WIDTH_IN_TILES * Chunk.HEIGHT_IN_TILES
+            print('Failed. Substituting empty chunk')
             return False
 
-        self.tiles = j['floor_tiles']
+        self.tiles = [j['palette'][str(num)] for num in j['floor_tiles']]
+        self.mob_inits = j['mob_inits']
 
         print('Succeeded.')
         return True

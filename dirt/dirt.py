@@ -317,10 +317,10 @@ def main():
                         if 'substrate' not in tile:
                             tile['substrate'] = None
                         
-                        tile_kinds[int(tile_id)] = TileKind(substrate=tile['substrate'],
-                                                            is_beneath=tile['is_beneath'],
-                                                            is_solid=tile['is_solid'],
-                                                            img=tile['img'])
+                        tile_kinds[tile_id] = TileKind(substrate=tile['substrate'],
+                                                       is_beneath=tile['is_beneath'],
+                                                       is_solid=tile['is_solid'],
+                                                       img=tile['img'])
 
     # Load sprites.
     jauld_img = load_image('data/characters/jauld/face.png')

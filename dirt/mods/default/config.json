@@ -3,50 +3,50 @@
     "author": "Pingin Jr.",
     
     "spawn_player": {
-        "map": "data/castle.json",
+        "map_name": "overworld",
         "x": 12,
         "y": 16
     },
     
     "tiles": {
-        "0": {
+        "floor_fancy": {
             "is_beneath": true,
             "is_solid": false,
             "img": "data/floor_fancy.png"
         },
-        "1": {
+        "wall_fancy": {
             "is_beneath": false,
             "is_solid": true,
             "img": "data/wall_fancy.png"
         },
-        "2": {
+        "door_fancy": {
             "is_beneath": false,
             "is_solid": true,
             "img": "data/door_fancy.png"
         },
-        "3": {
-            "substrate": 0,
+        "column_fancy": {
+            "substrate": "floor_fancy",
             "is_beneath": false,
             "is_solid": true,
             "img": "data/column_fancy.png"
         },
-        "4": {
+        "grass_plain": {
             "is_beneath": false,
             "is_solid": false,
             "img": "data/grass_plain.png"
         },
-        "5": {
+        "floor_bloody_fancy": {
             "is_beneath": true,
             "is_solid": false,
             "img": "data/floor_bloody_fancy.png"
         },
-        "6": {
-            "substrate": 4,
+        "spikes": {
+            "substrate": "floor_bloody_fancy",
             "is_beneath": false,
             "is_solid": true,
             "img": "data/spikes.png"
         },
-        "7": {
+        "floor_glass_fancy": {
             "is_beneath": true,
             "is_solid": false,
             "img": "data/floor_glass_fancy.png"
